@@ -9,6 +9,7 @@ use App\Models\Ticket;
 use App\Models\TicketStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use App\Http\Requests\UpdateTicketRequest;
 
 class TicketController extends Controller
 {
@@ -76,9 +77,43 @@ class TicketController extends Controller
     /**
      * Update the specified ticket.
      */
-    public function update(Ticket $ticket)
-    {
-        //
+    public function update(
+        UpdateTicketRequest $request,
+        Ticket $ticket
+    ): TicketResource {
+        $data = $request->validated();
+
+        $ticket->update($data);
+
+        if (
+            isset($data['status_id']) &&
+            $ticket->status?->code === 'RESOLVED' &&
+            !$ticket->resolved_at
+        ) {
+            $ticket->update([
+                'resolved_at' => now(),
+            ]);
+        }
+
+        if (
+            isset($data['status_id']) &&
+            $ticket->status?->code === 'CLOSED' &&
+            !$ticket->closed_at
+        ) {
+            $ticket->update([
+                'closed_at' => now(),
+            ]);
+        }
+
+        $ticket->load([
+            'requester',
+            'category',
+            'priority',
+            'status',
+            'assignee',
+        ]);
+
+        return new TicketResource($ticket);
     }
 
     /**
