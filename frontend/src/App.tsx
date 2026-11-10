@@ -4,6 +4,8 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import CreateTicket from "./pages/CreateTicket";
+import Tickets from "./pages/Tickets";
+import TicketDetail from "./pages/TicketDetail";
 
 function App() {
   return (
@@ -14,7 +16,9 @@ function App() {
         <Route element={<MainLayout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/tickets" element={<Tickets />} />
           <Route path="/tickets/create" element={<CreateTicket />} />
+          <Route path="/tickets/:id" element={<TicketDetail />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

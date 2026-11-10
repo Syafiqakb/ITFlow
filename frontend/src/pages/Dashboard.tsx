@@ -13,8 +13,8 @@ function Dashboard() {
     isLoading: isTicketsLoading,
     isError: isTicketsError,
   } = useQuery({
-    queryKey: ["tickets"],
-    queryFn: getTickets,
+    queryKey: ["dashboard-tickets"],
+    queryFn: () => getTickets(),
   });
 
   const {

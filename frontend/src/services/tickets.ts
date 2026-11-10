@@ -62,8 +62,30 @@ interface TicketListResponse {
   };
 }
 
-export async function getTickets(): Promise<TicketListResponse> {
-  const response = await api.get<TicketListResponse>("/tickets");
+export interface TicketFilters {
+  search?: string;
+  status?: string;
+  priority?: string;
+}
+
+export async function getTickets(
+  page = 1,
+  filters: TicketFilters = {},
+): Promise<TicketListResponse> {
+  const response = await api.get<TicketListResponse>("/tickets", {
+    params: {
+      page,
+      search: filters.search || undefined,
+      status: filters.status || undefined,
+      priority: filters.priority || undefined,
+    },
+  });
 
   return response.data;
+}
+
+export async function getTicket(id: number): Promise<Ticket> {
+  const response = await api.get<{ data: Ticket }>(`/tickets/${id}`);
+
+  return response.data.data;
 }

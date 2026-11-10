@@ -4,29 +4,55 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTicketRequest;
+use App\Http\Requests\UpdateTicketRequest;
 use App\Http\Resources\TicketResource;
 use App\Models\Ticket;
 use App\Models\TicketStatus;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use App\Http\Requests\UpdateTicketRequest;
 
 class TicketController extends Controller
 {
     /**
      * Display a listing of tickets.
      */
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $tickets = Ticket::with([
+        $query = Ticket::with([
             'requester',
             'category',
             'priority',
             'status',
             'assignee',
-        ])
+        ]);
+
+        if ($request->filled('search')) {
+            $search = $request->string('search');
+
+            $query->where(function ($query) use ($search) {
+                $query
+                    ->where('ticket_number', 'ilike', "%{$search}%")
+                    ->orWhere('title', 'ilike', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->whereHas('status', function ($query) use ($request) {
+                $query->where('code', $request->string('status'));
+            });
+        }
+
+        if ($request->filled('priority')) {
+            $query->whereHas('priority', function ($query) use ($request) {
+                $query->where('code', $request->string('priority'));
+            });
+        }
+
+        $tickets = $query
             ->latest()
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         return TicketResource::collection($tickets);
     }
