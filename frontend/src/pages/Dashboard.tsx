@@ -1,38 +1,59 @@
-import Badge from "../components/Badge";
+import { useQuery } from "@tanstack/react-query";
+
 import Button from "../components/Button";
 import Card from "../components/Card";
+import Badge from "../components/Badge";
+
+import { getTickets } from "../services/tickets";
+import { getDashboardStats } from "../services/dashboard";
 
 function Dashboard() {
+  const {
+    data: ticketResponse,
+    isLoading: isTicketsLoading,
+    isError: isTicketsError,
+  } = useQuery({
+    queryKey: ["tickets"],
+    queryFn: getTickets,
+  });
+
+  const {
+    data: dashboardStats,
+    isLoading: isStatsLoading,
+    isError: isStatsError,
+  } = useQuery({
+    queryKey: ["dashboard-stats"],
+    queryFn: getDashboardStats,
+  });
+
+  const tickets = ticketResponse?.data ?? [];
+
   return (
     <div>
       {/* Page Header */}
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
 
-          <p className="mt-1 text-sm text-gray-500">
-            Overview of your IT service desk.
-          </p>
+        <p className="mt-1 text-sm text-gray-500">
+          Overview of your IT service desk activity.
+        </p>
+      </div>
+
+      {/* API Status */}
+      {isTicketsError || isStatsError ? (
+        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+          <p className="text-sm text-red-700">Unable to load dashboard data.</p>
         </div>
-
-        <Button>Create Ticket</Button>
-      </div>
-
-      {/* Ticket Status */}
-      <div className="mb-6 flex flex-wrap items-center gap-3">
-        <Badge variant="success">Resolved</Badge>
-
-        <Badge variant="warning">In Progress</Badge>
-
-        <Badge variant="danger">SLA Breached</Badge>
-      </div>
+      ) : null}
 
       {/* KPI Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="p-5">
           <p className="text-sm text-gray-500">Open Tickets</p>
 
-          <p className="mt-2 text-3xl font-bold text-gray-900">24</p>
+          <p className="mt-2 text-3xl font-bold text-gray-900">
+            {isStatsLoading ? "—" : (dashboardStats?.open_tickets ?? 0)}
+          </p>
 
           <p className="mt-2 text-xs text-gray-500">
             Tickets requiring attention
@@ -42,7 +63,9 @@ function Dashboard() {
         <Card className="p-5">
           <p className="text-sm text-gray-500">In Progress</p>
 
-          <p className="mt-2 text-3xl font-bold text-gray-900">12</p>
+          <p className="mt-2 text-3xl font-bold text-gray-900">
+            {isStatsLoading ? "—" : (dashboardStats?.in_progress_tickets ?? 0)}
+          </p>
 
           <p className="mt-2 text-xs text-gray-500">Currently being handled</p>
         </Card>
@@ -50,7 +73,9 @@ function Dashboard() {
         <Card className="p-5">
           <p className="text-sm text-gray-500">Resolved</p>
 
-          <p className="mt-2 text-3xl font-bold text-gray-900">86</p>
+          <p className="mt-2 text-3xl font-bold text-gray-900">
+            {isStatsLoading ? "—" : (dashboardStats?.resolved_tickets ?? 0)}
+          </p>
 
           <p className="mt-2 text-xs text-gray-500">Successfully resolved</p>
         </Card>
@@ -58,7 +83,9 @@ function Dashboard() {
         <Card className="p-5">
           <p className="text-sm text-gray-500">SLA Breached</p>
 
-          <p className="mt-2 text-3xl font-bold text-red-600">3</p>
+          <p className="mt-2 text-3xl font-bold text-red-600">
+            {isStatsLoading ? "—" : (dashboardStats?.sla_breached ?? 0)}
+          </p>
 
           <p className="mt-2 text-xs text-red-500">
             Requires immediate attention
@@ -82,47 +109,55 @@ function Dashboard() {
           </div>
 
           <div className="divide-y">
-            <div className="flex items-center justify-between px-5 py-4">
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  IT-2026-000124
-                </p>
-
-                <p className="mt-1 text-sm text-gray-500">
-                  Cannot access company email
-                </p>
+            {isTicketsLoading && (
+              <div className="px-5 py-6 text-center">
+                <p className="text-sm text-gray-500">Loading tickets...</p>
               </div>
+            )}
 
-              <Badge variant="warning">In Progress</Badge>
-            </div>
-
-            <div className="flex items-center justify-between px-5 py-4">
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  IT-2026-000123
-                </p>
-
-                <p className="mt-1 text-sm text-gray-500">
-                  Laptop performance issue
-                </p>
+            {isTicketsError && (
+              <div className="px-5 py-6 text-center">
+                <p className="text-sm text-red-600">Unable to load tickets.</p>
               </div>
+            )}
 
-              <Badge variant="info">Assigned</Badge>
-            </div>
-
-            <div className="flex items-center justify-between px-5 py-4">
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  IT-2026-000122
-                </p>
-
-                <p className="mt-1 text-sm text-gray-500">
-                  Request access to shared folder
-                </p>
+            {!isTicketsLoading && !isTicketsError && tickets.length === 0 && (
+              <div className="px-5 py-6 text-center">
+                <p className="text-sm text-gray-500">No tickets found.</p>
               </div>
+            )}
 
-              <Badge variant="success">Resolved</Badge>
-            </div>
+            {!isTicketsLoading &&
+              !isTicketsError &&
+              tickets.slice(0, 5).map((ticket) => (
+                <div
+                  key={ticket.id}
+                  className="flex items-center justify-between px-5 py-4"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      {ticket.ticket_number}
+                    </p>
+
+                    <p className="mt-1 text-sm text-gray-500">{ticket.title}</p>
+                  </div>
+
+                  <Badge
+                    variant={
+                      ticket.status.code === "RESOLVED" ||
+                      ticket.status.code === "CLOSED"
+                        ? "success"
+                        : ticket.status.code === "IN_PROGRESS"
+                          ? "warning"
+                          : ticket.status.code === "ASSIGNED"
+                            ? "info"
+                            : "default"
+                    }
+                  >
+                    {ticket.status.name}
+                  </Badge>
+                </div>
+              ))}
           </div>
         </Card>
       </div>
