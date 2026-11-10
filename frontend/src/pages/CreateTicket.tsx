@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,6 +9,7 @@ import Card from "../components/Card";
 import Input from "../components/Input";
 import Select from "../components/Select";
 import Textarea from "../components/Textarea";
+import { createTicket } from "../services/tickets";
 
 const createTicketSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
@@ -38,9 +40,60 @@ function CreateTicket() {
     },
   });
 
-  const onSubmit = (data: CreateTicketForm) => {
-    console.log("Ticket submitted:", data);
-    setSubmitted(true);
+  const navigate = useNavigate();
+
+  const onSubmit = async (data: CreateTicketForm) => {
+    try {
+      const categoryMap: Record<string, number> = {
+        hardware: 1,
+        software: 2,
+        network: 3,
+        access: 4,
+        email: 5,
+        other: 6,
+      };
+
+      const priorityMap: Record<string, number> = {
+        low: 1,
+        medium: 2,
+        high: 3,
+        critical: 4,
+      };
+
+      const categoryKey = data.category.trim().toLowerCase();
+      const priorityKey = data.priority.trim().toLowerCase();
+
+      const categoryId = categoryMap[categoryKey];
+      const priorityId = priorityMap[priorityKey];
+
+      if (!categoryId || !priorityId) {
+        alert(
+          `Invalid category or priority.\nCategory: ${data.category}\nPriority: ${data.priority}`,
+        );
+
+        return;
+      }
+
+      const ticket = await createTicket({
+        title: data.title,
+        description: data.description,
+        category_id: categoryId,
+        priority_id: priorityId,
+      });
+
+      navigate(`/tickets/${ticket.id}`);
+    } catch (error: any) {
+      console.error("Create ticket error:", error);
+
+      console.error("Response:", error.response?.data);
+
+      alert(
+        error.response?.data?.message ||
+          JSON.stringify(error.response?.data) ||
+          error.message ||
+          "Unable to create ticket.",
+      );
+    }
   };
 
   return (
