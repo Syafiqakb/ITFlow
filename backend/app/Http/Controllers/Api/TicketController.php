@@ -49,6 +49,16 @@ class TicketController extends Controller
             });
         }
 
+        if ($request->filled('assigned_to')) {
+            $query->where('assigned_to', $request->integer('assigned_to'));
+        }
+
+        if ($request->filled('category')) {
+            $query->whereHas('category', function ($query) use ($request) {
+                $query->where('code', $request->string('category'));
+            });
+        }
+
         $tickets = $query
             ->latest()
             ->paginate(15)

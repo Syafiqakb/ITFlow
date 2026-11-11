@@ -66,6 +66,8 @@ export interface TicketFilters {
   search?: string;
   status?: string;
   priority?: string;
+  assigned_to?: number;
+  category?: string;
 }
 
 export interface CreateTicketPayload {
@@ -85,6 +87,8 @@ export async function getTickets(
       search: filters.search || undefined,
       status: filters.status || undefined,
       priority: filters.priority || undefined,
+      assigned_to: filters.assigned_to || undefined,
+      category: filters.category || undefined,
     },
   });
 

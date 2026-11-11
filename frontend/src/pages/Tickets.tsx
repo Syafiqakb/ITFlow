@@ -7,6 +7,7 @@ import Button from "../components/Button";
 import Card from "../components/Card";
 import Input from "../components/Input";
 import Select from "../components/Select";
+import { getUsers } from "../services/users";
 import { getTickets, type TicketFilters } from "../services/tickets";
 
 function Tickets() {
@@ -16,6 +17,13 @@ function Tickets() {
     search: "",
     status: "",
     priority: "",
+    assigned_to: undefined,
+    category: "",
+  });
+
+  const { data: users = [], isLoading: isUsersLoading } = useQuery({
+    queryKey: ["users"],
+    queryFn: getUsers,
   });
 
   const {
@@ -71,7 +79,7 @@ function Tickets() {
         )}
 
         <div className="border-b px-5 py-4">
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             <Input
               label="Search"
               placeholder="Search ticket number or title..."
@@ -125,17 +133,69 @@ function Tickets() {
               <option value="HIGH">High</option>
               <option value="CRITICAL">Critical</option>
             </Select>
+            <Select
+              label="Assignee"
+              value={filters.assigned_to ?? ""}
+              onChange={(event) => {
+                setPage(1);
+
+                setFilters((current) => ({
+                  ...current,
+                  assigned_to: event.target.value
+                    ? Number(event.target.value)
+                    : undefined,
+                }));
+              }}
+            >
+              <option value="">
+                {isUsersLoading ? "Loading users..." : "All Assignees"}
+              </option>
+
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.name}
+                </option>
+              ))}
+            </Select>
+            <Select
+              label="Category"
+              value={filters.category}
+              onChange={(event) => {
+                setPage(1);
+
+                setFilters((current) => ({
+                  ...current,
+                  category: event.target.value,
+                }));
+              }}
+            >
+              <option value="">All Categories</option>
+              <option value="HARDWARE">Hardware</option>
+              <option value="SOFTWARE">Software</option>
+              <option value="NETWORK">Network</option>
+              <option value="ACCESS">Access</option>
+              <option value="EMAIL">Email</option>
+              <option value="OTHER">Other</option>
+            </Select>
           </div>
 
           <div className="mt-4 flex justify-end">
             <Button
               variant="secondary"
-              disabled={!filters.search && !filters.status && !filters.priority}
+              disabled={
+                !filters.search &&
+                !filters.status &&
+                !filters.priority &&
+                !filters.assigned_to &&
+                !filters.category
+              }
               onClick={() => {
                 setFilters({
                   search: "",
                   status: "",
                   priority: "",
+                  assigned_to: undefined,
+                  category: "",
                 });
 
                 setPage(1);
