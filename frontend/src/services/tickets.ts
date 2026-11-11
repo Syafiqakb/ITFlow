@@ -37,11 +37,12 @@ export interface Ticket {
     email: string;
   } | null;
 
-  due_at: string | null;
-  resolved_at: string | null;
-  closed_at: string | null;
   created_at: string;
   updated_at: string;
+  due_at: string | null;
+  sla_status: "ON_TRACK" | "BREACHED" | "COMPLETED" | null;
+  resolved_at: string | null;
+  closed_at: string | null;
 }
 
 interface TicketListResponse {

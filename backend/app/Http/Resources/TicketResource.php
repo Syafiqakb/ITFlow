@@ -55,6 +55,13 @@ class TicketResource extends JsonResource
                 : null,
 
             'due_at' => $this->due_at?->toISOString(),
+            'sla_status' => $this->due_at
+                ? (
+                    in_array($this->status?->code, ['RESOLVED', 'CLOSED'], true)
+                        ? 'COMPLETED'
+                        : ($this->due_at->isPast() ? 'BREACHED' : 'ON_TRACK')
+                )
+                : null,
             'resolved_at' => $this->resolved_at?->toISOString(),
             'closed_at' => $this->closed_at?->toISOString(),
 

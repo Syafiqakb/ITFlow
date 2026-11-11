@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateTicketRequest;
 use App\Http\Resources\TicketResource;
 use App\Models\Ticket;
 use App\Models\TicketStatus;
+use App\Models\SlaPolicy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -74,6 +75,19 @@ class TicketController extends Controller
     {
         $newStatus = TicketStatus::where('code', 'NEW')->firstOrFail();
 
+        $priorityId = $request->validated('priority_id');
+
+        $slaPolicy = SlaPolicy::where(
+            'priority_id',
+            $priorityId
+        )
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $dueAt = now()->addMinutes(
+            $slaPolicy->resolution_time_minutes
+        );
+
         $ticket = Ticket::create([
             'title' => $request->validated('title'),
             'description' => $request->validated('description'),
@@ -81,6 +95,7 @@ class TicketController extends Controller
             'category_id' => $request->validated('category_id'),
             'priority_id' => $request->validated('priority_id'),
             'status_id' => $newStatus->id,
+            'due_at' => $dueAt,
         ]);
 
         $ticket->load([

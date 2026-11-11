@@ -310,6 +310,27 @@ function TicketDetail() {
                     : "Not set"}
                 </p>
               </div>
+              <div className="px-6 py-4">
+                <p className="text-sm text-gray-500">SLA Status</p>
+
+                <p
+                  className={`mt-1 font-medium ${
+                    ticket.sla_status === "BREACHED"
+                      ? "text-red-600"
+                      : ticket.sla_status === "COMPLETED"
+                        ? "text-green-600"
+                        : "text-blue-600"
+                  }`}
+                >
+                  {ticket.sla_status === "BREACHED"
+                    ? "Breached"
+                    : ticket.sla_status === "COMPLETED"
+                      ? "Completed"
+                      : ticket.sla_status === "ON_TRACK"
+                        ? "On Track"
+                        : "-"}
+                </p>
+              </div>
             </div>
           </Card>
         </div>

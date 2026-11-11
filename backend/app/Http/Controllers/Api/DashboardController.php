@@ -32,6 +32,16 @@ class DashboardController extends Controller
             $query->where('code', 'CLOSED');
         })->count();
 
+        $slaBreached = Ticket::whereNotNull('due_at')
+            ->where('due_at', '<', now())
+            ->whereHas('status', function ($query) {
+                $query->whereNotIn('code', [
+                    'RESOLVED',
+                    'CLOSED',
+                ]);
+            })
+            ->count();
+
         return response()->json([
             'data' => [
                 'total_tickets' => $totalTickets,
@@ -39,7 +49,7 @@ class DashboardController extends Controller
                 'in_progress_tickets' => $inProgressTickets,
                 'resolved_tickets' => $resolvedTickets,
                 'closed_tickets' => $closedTickets,
-                'sla_breached' => 0,
+                'sla_breached' => $slaBreached,
             ],
         ]);
     }
