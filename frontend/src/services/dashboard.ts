@@ -5,6 +5,7 @@ export interface DashboardStats {
   open_tickets: number;
   in_progress_tickets: number;
   resolved_tickets: number;
+  closed_tickets: number;
   sla_breached: number;
 }
 

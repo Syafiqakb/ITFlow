@@ -38,7 +38,7 @@ function Dashboard() {
           Overview of your IT service desk activity.
         </p>
       </div>
-
+      
       {/* API Status */}
       {isTicketsError || isStatsError ? (
         <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
@@ -47,7 +47,17 @@ function Dashboard() {
       ) : null}
 
       {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <Card className="p-5">
+          <p className="text-sm text-gray-500">Total Tickets</p>
+
+          <p className="mt-2 text-3xl font-bold text-gray-900">
+            {isStatsLoading ? "—" : (dashboardStats?.total_tickets ?? 0)}
+          </p>
+
+          <p className="mt-2 text-xs text-gray-500">All tickets</p>
+        </Card>
+
         <Card className="p-5">
           <p className="text-sm text-gray-500">Open Tickets</p>
 
@@ -78,6 +88,16 @@ function Dashboard() {
           </p>
 
           <p className="mt-2 text-xs text-gray-500">Successfully resolved</p>
+        </Card>
+
+        <Card className="p-5">
+          <p className="text-sm text-gray-500">Closed</p>
+
+          <p className="mt-2 text-3xl font-bold text-gray-900">
+            {isStatsLoading ? "—" : (dashboardStats?.closed_tickets ?? 0)}
+          </p>
+
+          <p className="mt-2 text-xs text-gray-500">Completed tickets</p>
         </Card>
 
         <Card className="p-5">

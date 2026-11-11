@@ -13,7 +13,11 @@ class DashboardController extends Controller
         $totalTickets = Ticket::count();
 
         $openTickets = Ticket::whereHas('status', function ($query) {
-            $query->whereNotIn('code', ['RESOLVED', 'CLOSED']);
+            $query->whereIn('code', [
+                'NEW',
+                'ASSIGNED',
+                'WAITING_USER',
+            ]);
         })->count();
 
         $inProgressTickets = Ticket::whereHas('status', function ($query) {
@@ -24,12 +28,17 @@ class DashboardController extends Controller
             $query->where('code', 'RESOLVED');
         })->count();
 
+        $closedTickets = Ticket::whereHas('status', function ($query) {
+            $query->where('code', 'CLOSED');
+        })->count();
+
         return response()->json([
             'data' => [
                 'total_tickets' => $totalTickets,
                 'open_tickets' => $openTickets,
                 'in_progress_tickets' => $inProgressTickets,
                 'resolved_tickets' => $resolvedTickets,
+                'closed_tickets' => $closedTickets,
                 'sla_breached' => 0,
             ],
         ]);
