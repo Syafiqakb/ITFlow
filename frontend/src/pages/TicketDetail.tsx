@@ -5,8 +5,9 @@ import { Link, useParams } from "react-router-dom";
 import Badge from "../components/Badge";
 import Button from "../components/Button";
 import Card from "../components/Card";
-import { getTicket, updateTicket } from "../services/tickets";
 import { getUsers } from "../services/users";
+import { getTicket, updateTicket } from "../services/tickets";
+import { getComments, createComment } from "../services/comments";
 
 function TicketDetail() {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +24,12 @@ function TicketDetail() {
     enabled: Number.isInteger(ticketId),
   });
 
+  const { data: comments = [], isLoading: isCommentsLoading } = useQuery({
+    queryKey: ["ticket-comments", ticketId],
+    queryFn: () => getComments(ticketId),
+    enabled: Number.isInteger(ticketId),
+  });
+
   const { data: users = [], isLoading: isUsersLoading } = useQuery({
     queryKey: ["users"],
     queryFn: getUsers,
@@ -35,6 +42,7 @@ function TicketDetail() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [assignedTo, setAssignedTo] = useState<number | null>(null);
+  const [comment, setComment] = useState("");
 
   useEffect(() => {
     if (ticket) {
@@ -89,6 +97,31 @@ function TicketDetail() {
         error.response?.data?.message ||
           error.message ||
           "Unable to update ticket.",
+      );
+    },
+  });
+
+  const commentMutation = useMutation({
+    mutationFn: () => {
+      return createComment(ticketId, comment);
+    },
+
+    onSuccess: () => {
+      setComment("");
+
+      queryClient.invalidateQueries({
+        queryKey: ["ticket-comments", ticketId],
+      });
+    },
+
+    onError: (error: any) => {
+      console.error("Create comment error:", error);
+      console.error("Response:", error.response?.data);
+
+      alert(
+        error.response?.data?.message ||
+          error.message ||
+          "Unable to add comment.",
       );
     },
   });
@@ -371,6 +404,73 @@ function TicketDetail() {
           </div>
         </Card>
       </div>
+      <Card className="mt-6 p-6">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Activity</h2>
+
+          <p className="mt-1 text-sm text-gray-500">
+            Conversation and updates for this ticket.
+          </p>
+        </div>
+
+        {/* Add Comment */}
+        <div className="mt-6">
+          <label className="block text-sm font-medium text-gray-700">
+            Add Comment
+          </label>
+
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            rows={4}
+            placeholder="Write a comment..."
+            className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-500 focus:outline-none"
+          />
+
+          <div className="mt-3 flex justify-end">
+            <Button
+              onClick={() => commentMutation.mutate()}
+              disabled={commentMutation.isPending || comment.trim().length < 2}
+            >
+              {commentMutation.isPending ? "Adding..." : "Add Comment"}
+            </Button>
+          </div>
+        </div>
+
+        {/* Comments List */}
+        <div className="mt-8 space-y-5">
+          {isCommentsLoading ? (
+            <p className="text-sm text-gray-500">Loading activity...</p>
+          ) : comments.length === 0 ? (
+            <p className="text-sm text-gray-500">No activity yet.</p>
+          ) : (
+            comments.map((item) => (
+              <div
+                key={item.id}
+                className="border-b border-gray-100 pb-5 last:border-b-0"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="font-medium text-gray-900">
+                      {item.user.name}
+                    </p>
+
+                    <p className="text-xs text-gray-500">{item.user.email}</p>
+                  </div>
+
+                  <p className="text-xs text-gray-400">
+                    {new Date(item.created_at).toLocaleString()}
+                  </p>
+                </div>
+
+                <p className="mt-3 whitespace-pre-wrap text-sm text-gray-700">
+                  {item.comment}
+                </p>
+              </div>
+            ))
+          )}
+        </div>
+      </Card>
     </div>
   );
 }

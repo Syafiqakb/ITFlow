@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Ticket extends Model
 {
@@ -72,5 +73,10 @@ class Ticket extends Model
                 $nextNumber
             );
         });
+    }
+    
+    public function comments(): HasMany
+    {
+        return $this->hasMany(TicketComment::class);
     }
 }
