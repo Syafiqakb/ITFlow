@@ -126,6 +126,34 @@ function TicketDetail() {
     },
   });
 
+  const getAllowedStatuses = () => {
+    switch (ticket?.status.code) {
+      case "NEW":
+        return [{ id: 2, code: "ASSIGNED" }];
+
+      case "ASSIGNED":
+        return [{ id: 3, code: "IN_PROGRESS" }];
+
+      case "IN_PROGRESS":
+        return [
+          { id: 4, code: "WAITING_USER" },
+          { id: 5, code: "RESOLVED" },
+        ];
+
+      case "WAITING_USER":
+        return [{ id: 3, code: "IN_PROGRESS" }];
+
+      case "RESOLVED":
+        return [{ id: 6, code: "CLOSED" }];
+
+      case "CLOSED":
+        return [];
+
+      default:
+        return [];
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="py-10 text-center">
@@ -333,13 +361,15 @@ function TicketDetail() {
                 onChange={(e) => setStatusId(Number(e.target.value))}
                 className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-500 focus:outline-none"
               >
-                <option value="">Select status</option>
-                <option value="1">NEW</option>
-                <option value="2">ASSIGNED</option>
-                <option value="3">IN_PROGRESS</option>
-                <option value="4">WAITING_USER</option>
-                <option value="5">RESOLVED</option>
-                <option value="6">CLOSED</option>
+                <option value={ticket?.status.id ?? ""}>
+                  {ticket?.status.name ?? "Current status"}
+                </option>
+
+                {getAllowedStatuses().map((status) => (
+                  <option key={status.id} value={status.id}>
+                    {status.code}
+                  </option>
+                ))}
               </select>
             </div>
 

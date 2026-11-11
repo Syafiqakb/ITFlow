@@ -119,25 +119,88 @@ class TicketController extends Controller
     ): TicketResource {
         $data = $request->validated();
 
+        if (isset($data['status_id'])) {
+            $currentStatus = $ticket->status?->code;
+
+            $newStatus = TicketStatus::find(
+                $data['status_id']
+            )?->code;
+
+            $allowedTransitions = [
+                'NEW' => [
+                    'ASSIGNED',
+                ],
+
+                'ASSIGNED' => [
+                    'IN_PROGRESS',
+                ],
+
+                'IN_PROGRESS' => [
+                    'WAITING_USER',
+                    'RESOLVED',
+                ],
+
+                'WAITING_USER' => [
+                    'IN_PROGRESS',
+                ],
+
+                'RESOLVED' => [
+                    'CLOSED',
+                ],
+
+                'CLOSED' => [],
+            ];
+
+            if (
+                $currentStatus !== $newStatus &&
+                !in_array(
+                    $newStatus,
+                    $allowedTransitions[$currentStatus] ?? [],
+                    true
+                )
+            ) {
+                abort(
+                    422,
+                    "Invalid status transition from {$currentStatus} to {$newStatus}."
+                );
+            }
+        }
+
         $ticket->update($data);
 
         if (
             isset($data['status_id']) &&
-            $ticket->status?->code === 'RESOLVED' &&
-            !$ticket->resolved_at
+            $ticket->status?->code === 'RESOLVED'
         ) {
             $ticket->update([
-                'resolved_at' => now(),
+                'resolved_at' => $ticket->resolved_at ?? now(),
             ]);
         }
 
         if (
             isset($data['status_id']) &&
-            $ticket->status?->code === 'CLOSED' &&
-            !$ticket->closed_at
+            $ticket->status?->code !== 'RESOLVED'
         ) {
             $ticket->update([
-                'closed_at' => now(),
+                'resolved_at' => null,
+            ]);
+        }
+
+        if (
+            isset($data['status_id']) &&
+            $ticket->status?->code === 'CLOSED'
+        ) {
+            $ticket->update([
+                'closed_at' => $ticket->closed_at ?? now(),
+            ]);
+        }
+
+        if (
+            isset($data['status_id']) &&
+            $ticket->status?->code !== 'CLOSED'
+        ) {
+            $ticket->update([
+                'closed_at' => null,
             ]);
         }
 

@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Role;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateTicketRequest extends FormRequest
 {
@@ -60,7 +62,15 @@ class UpdateTicketRequest extends FormRequest
                 'sometimes',
                 'nullable',
                 'integer',
-                'exists:users,id',
+                Rule::exists('users', 'id')
+                    ->where('is_active', true)
+                    ->whereIn(
+                        'role_id',
+                        Role::whereIn('code', [
+                            'IT_SUPPORT',
+                            'IT_MANAGER',
+                        ])->pluck('id')
+                    ),
             ],
         ];
     }
