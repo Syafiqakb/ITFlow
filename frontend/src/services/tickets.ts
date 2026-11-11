@@ -41,6 +41,8 @@ export interface Ticket {
   updated_at: string;
   due_at: string | null;
   sla_status: "ON_TRACK" | "BREACHED" | "COMPLETED" | null;
+  first_responded_at: string | null;
+  response_sla_status: "PENDING" | "PASSED" | "BREACHED";
   resolved_at: string | null;
   closed_at: string | null;
 }

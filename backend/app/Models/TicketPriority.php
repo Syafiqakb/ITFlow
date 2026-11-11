@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Models\Ticket;
 
 class TicketPriority extends Model
@@ -19,5 +20,10 @@ class TicketPriority extends Model
     public function tickets(): HasMany
     {
         return $this->hasMany(Ticket::class, 'priority_id');
+    }
+
+    public function slaPolicy(): HasOne
+    {
+        return $this->hasOne(SlaPolicy::class, 'priority_id');
     }
 }

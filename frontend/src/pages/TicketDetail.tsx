@@ -331,6 +331,34 @@ function TicketDetail() {
                         : "-"}
                 </p>
               </div>
+              <div className="px-6 py-4">
+                <p className="text-sm text-gray-500">First Response</p>
+                <p className="mt-1 font-medium text-gray-900">
+                  {ticket.first_responded_at
+                    ? new Date(ticket.first_responded_at).toLocaleString()
+                    : "Not yet responded"}
+                </p>
+              </div>
+
+              <div className="px-6 py-4">
+                <p className="text-sm text-gray-500">Response SLA</p>
+
+                <p
+                  className={`mt-1 font-medium ${
+                    ticket.response_sla_status === "BREACHED"
+                      ? "text-red-600"
+                      : ticket.response_sla_status === "PASSED"
+                        ? "text-green-600"
+                        : "text-yellow-600"
+                  }`}
+                >
+                  {ticket.response_sla_status === "BREACHED"
+                    ? "Breached"
+                    : ticket.response_sla_status === "PASSED"
+                      ? "Passed"
+                      : "Pending"}
+                </p>
+              </div>
             </div>
           </Card>
         </div>

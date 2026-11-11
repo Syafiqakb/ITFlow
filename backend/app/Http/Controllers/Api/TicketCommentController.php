@@ -51,6 +51,18 @@ class TicketCommentController extends Controller
             'comment' => $validated['comment'],
         ]);
 
+        if (
+            !$ticket->first_responded_at &&
+            in_array($request->user()->role?->code, [
+                'IT_SUPPORT',
+                'IT_MANAGER',
+            ], true)
+        ) {
+            $ticket->update([
+                'first_responded_at' => now(),
+            ]);
+        }
+
         $comment->load('user');
 
         return response()->json([

@@ -55,6 +55,27 @@ class TicketResource extends JsonResource
                 : null,
 
             'due_at' => $this->due_at?->toISOString(),
+
+            'first_responded_at' => $this->first_responded_at?->toISOString(),
+
+            'response_sla_status' => $this->first_responded_at
+                ? (
+                    $this->first_responded_at->lessThanOrEqualTo(
+                        $this->created_at->copy()->addMinutes(
+                            $this->priority?->slaPolicy?->response_time_minutes ?? 0
+                        )
+                    )
+                        ? 'PASSED'
+                        : 'BREACHED'
+                )
+                : (
+                    $this->created_at->copy()->addMinutes(
+                        $this->priority?->slaPolicy?->response_time_minutes ?? 0
+                    )->isPast()
+                        ? 'BREACHED'
+                        : 'PENDING'
+                ),
+
             'sla_status' => $this->due_at
                 ? (
                     in_array($this->status?->code, ['RESOLVED', 'CLOSED'], true)

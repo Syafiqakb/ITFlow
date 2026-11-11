@@ -19,12 +19,14 @@ class Ticket extends Model
         'status_id',
         'assigned_to',
         'due_at',
+        'first_responded_at',
         'resolved_at',
         'closed_at',
     ];
 
     protected $casts = [
         'due_at' => 'datetime',
+        'first_responded_at' => 'datetime',
         'resolved_at' => 'datetime',
         'closed_at' => 'datetime',
     ];
