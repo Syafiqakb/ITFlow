@@ -104,3 +104,21 @@ export async function createTicket(
 
   return response.data.data;
 }
+
+export interface UpdateTicketPayload {
+  title?: string;
+  description?: string;
+  category_id?: number;
+  priority_id?: number;
+  status_id?: number;
+  assigned_to?: number | null;
+}
+
+export async function updateTicket(
+  id: number,
+  payload: UpdateTicketPayload,
+): Promise<Ticket> {
+  const response = await api.patch<{ data: Ticket }>(`/tickets/${id}`, payload);
+
+  return response.data.data;
+}
