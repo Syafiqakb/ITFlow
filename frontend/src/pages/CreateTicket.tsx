@@ -24,7 +24,7 @@ const createTicketSchema = z.object({
 type CreateTicketForm = z.infer<typeof createTicketSchema>;
 
 function CreateTicket() {
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted] = useState(false);
 
   const {
     register,

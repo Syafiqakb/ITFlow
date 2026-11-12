@@ -76,9 +76,14 @@ class Ticket extends Model
             );
         });
     }
-    
+
     public function comments(): HasMany
     {
         return $this->hasMany(TicketComment::class);
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(TicketAttachment::class);
     }
 }

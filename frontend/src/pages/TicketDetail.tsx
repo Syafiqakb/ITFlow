@@ -8,6 +8,7 @@ import Card from "../components/Card";
 import { getUsers } from "../services/users";
 import { getTicket, updateTicket } from "../services/tickets";
 import { getComments, createComment } from "../services/comments";
+import { deleteAttachment, getAttachments, uploadAttachment } from "../services/attachments";
 
 function TicketDetail() {
   const { id } = useParams<{ id: string }>();
@@ -27,6 +28,12 @@ function TicketDetail() {
   const { data: comments = [], isLoading: isCommentsLoading } = useQuery({
     queryKey: ["ticket-comments", ticketId],
     queryFn: () => getComments(ticketId),
+    enabled: Number.isInteger(ticketId),
+  });
+
+  const { data: attachments = [], isLoading: isAttachmentsLoading } = useQuery({
+    queryKey: ["ticket-attachments", ticketId],
+    queryFn: () => getAttachments(ticketId),
     enabled: Number.isInteger(ticketId),
   });
 
@@ -122,6 +129,49 @@ function TicketDetail() {
         error.response?.data?.message ||
           error.message ||
           "Unable to add comment.",
+      );
+    },
+  });
+
+  const uploadAttachmentMutation = useMutation({
+    mutationFn: (file: File) => uploadAttachment(ticketId, file),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["ticket-attachments", ticketId],
+      });
+    },
+
+    onError: (error: any) => {
+      console.error("Upload attachment error:", error);
+      console.error("Response:", error.response?.data);
+
+      alert(
+        error.response?.data?.message ||
+          error.message ||
+          "Unable to upload attachment.",
+      );
+    },
+  });
+
+  const deleteAttachmentMutation = useMutation({
+    mutationFn: (attachmentId: number) =>
+      deleteAttachment(ticketId, attachmentId),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["ticket-attachments", ticketId],
+      });
+    },
+
+    onError: (error: any) => {
+      console.error("Delete attachment error:", error);
+      console.error("Response:", error.response?.data);
+
+      alert(
+        error.response?.data?.message ||
+          error.message ||
+          "Unable to delete attachment.",
       );
     },
   });
@@ -547,6 +597,91 @@ function TicketDetail() {
                 </p>
               </div>
             ))
+          )}
+        </div>
+      </Card>
+      {/* Attachments */}
+      <Card className="mt-6 p-6">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Attachments</h2>
+
+          <p className="mt-1 text-sm text-gray-500">
+            Files attached to this ticket.
+          </p>
+        </div>
+
+        {/* Upload */}
+        <div className="mt-5">
+          <label className="block text-sm font-medium text-gray-700">
+            Upload File
+          </label>
+
+          <input
+            type="file"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+
+              if (!file) {
+                return;
+              }
+
+              uploadAttachmentMutation.mutate(file);
+              event.target.value = "";
+            }}
+            disabled={uploadAttachmentMutation.isPending}
+            className="mt-2 block w-full text-sm text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-gray-900 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+          />
+
+          <p className="mt-2 text-xs text-gray-500">
+            Maximum file size: 10 MB.
+          </p>
+        </div>
+
+        {/* Attachment List */}
+        <div className="mt-6">
+          {isAttachmentsLoading ? (
+            <p className="text-sm text-gray-500">Loading attachments...</p>
+          ) : attachments.length === 0 ? (
+            <p className="text-sm text-gray-500">No attachments yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {attachments.map((attachment) => (
+                <div
+                  key={attachment.id}
+                  className="flex items-center justify-between rounded-lg border border-gray-200 p-4"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-gray-900">
+                      {attachment.original_name}
+                    </p>
+
+                    <p className="mt-1 text-xs text-gray-500">
+                      {(attachment.file_size / 1024).toFixed(1)} KB
+                      {" • "}
+                      Uploaded by {attachment.uploaded_by.name}
+                    </p>
+
+                    <p className="mt-1 text-xs text-gray-400">
+                      {new Date(attachment.created_at).toLocaleString()}
+                    </p>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="danger"
+                    onClick={() => {
+                      if (window.confirm("Delete this attachment?")) {
+                        deleteAttachmentMutation.mutate(attachment.id);
+                      }
+                    }}
+                    disabled={deleteAttachmentMutation.isPending}
+                    className="ml-4 shrink-0"
+                  >
+                    Delete
+                  </Button>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </Card>
