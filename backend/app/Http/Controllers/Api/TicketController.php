@@ -9,6 +9,8 @@ use App\Http\Resources\TicketResource;
 use App\Models\Ticket;
 use App\Models\TicketStatus;
 use App\Models\SlaPolicy;
+use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -71,7 +73,7 @@ class TicketController extends Controller
     /**
      * Store a newly created ticket.
      */
-    public function store(StoreTicketRequest $request): TicketResource
+    public function store(StoreTicketRequest $request, NotificationService $notificationService): TicketResource
     {
         $newStatus = TicketStatus::where('code', 'NEW')->firstOrFail();
 
@@ -97,6 +99,23 @@ class TicketController extends Controller
             'status_id' => $newStatus->id,
             'due_at' => $dueAt,
         ]);
+
+        $users = User::whereHas('role', function ($query) {
+            $query->whereIn('code', [
+                'IT_SUPPORT',
+                'IT_MANAGER',
+            ]);
+        })
+            ->where('id', '!=', $request->user()->id)
+            ->get();
+
+        $notificationService->notifyUsers(
+            $users,
+            'TICKET_CREATED',
+            'New Ticket Created',
+            "A new ticket {$ticket->ticket_number} has been created.",
+            $ticket
+        );
 
         $ticket->load([
             'requester',
@@ -130,9 +149,12 @@ class TicketController extends Controller
      */
     public function update(
         UpdateTicketRequest $request,
-        Ticket $ticket
+        Ticket $ticket,
+        NotificationService $notificationService
     ): TicketResource {
         $data = $request->validated();
+
+        $oldStatusCode = $ticket->status?->code;
 
         if (isset($data['status_id'])) {
             $currentStatus = $ticket->status?->code;
@@ -181,7 +203,29 @@ class TicketController extends Controller
             }
         }
 
+        $oldAssigneeId = $ticket->assigned_to;
+
+        if (
+            array_key_exists('assigned_to', $data) &&
+            $data['assigned_to'] !== $oldAssigneeId &&
+            $data['assigned_to'] !== null
+        ) {
+            $assignee = User::find($data['assigned_to']);
+
+            if ($assignee) {
+                $notificationService->notifyUser(
+                    $assignee,
+                    'TICKET_ASSIGNED',
+                    'Ticket Assigned',
+                    "Ticket {$ticket->ticket_number} has been assigned to you.",
+                    $ticket
+                );
+            }
+        }
+
         $ticket->update($data);
+        $ticket->refresh();
+        $ticket->load('status');
 
         if (
             isset($data['status_id']) &&
@@ -217,6 +261,19 @@ class TicketController extends Controller
             $ticket->update([
                 'closed_at' => null,
             ]);
+        }
+
+        if (
+            isset($data['status_id']) &&
+            $oldStatusCode !== $ticket->status?->code
+        ) {
+            $notificationService->notifyUser(
+                $ticket->requester,
+                'TICKET_STATUS_CHANGED',
+                'Ticket Status Updated',
+                "Ticket {$ticket->ticket_number} status has been changed to {$ticket->status?->name}.",
+                $ticket
+            );
         }
 
         $ticket->load([

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
 use App\Models\TicketComment;
+use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -36,7 +38,8 @@ class TicketCommentController extends Controller
 
     public function store(
         Request $request,
-        Ticket $ticket
+        Ticket $ticket,
+        NotificationService $notificationService
     ): JsonResponse {
         $validated = $request->validate([
             'comment' => [
@@ -61,6 +64,31 @@ class TicketCommentController extends Controller
             $ticket->update([
                 'first_responded_at' => now(),
             ]);
+        }
+
+        $commenterRole = $request->user()->role?->code;
+
+        if (
+            in_array($commenterRole, [
+                'IT_SUPPORT',
+                'IT_MANAGER',
+            ], true)
+        ) {
+            $notificationService->notifyUser(
+                $ticket->requester,
+                'TICKET_COMMENT',
+                'New Ticket Comment',
+                "{$request->user()->name} commented on ticket {$ticket->ticket_number}.",
+                $ticket
+            );
+        } elseif ($commenterRole === 'EMPLOYEE' && $ticket->assignee) {
+            $notificationService->notifyUser(
+                $ticket->assignee,
+                'TICKET_COMMENT',
+                'New Ticket Comment',
+                "{$request->user()->name} commented on ticket {$ticket->ticket_number}.",
+                $ticket
+            );
         }
 
         $comment->load('user');
