@@ -9,6 +9,7 @@ import { getUsers } from "../services/users";
 import { getTicket, updateTicket } from "../services/tickets";
 import { getComments, createComment } from "../services/comments";
 import { deleteAttachment, getAttachments, uploadAttachment } from "../services/attachments";
+import { getAuditLogs } from "../services/auditLogs";
 
 function TicketDetail() {
   const { id } = useParams<{ id: string }>();
@@ -34,6 +35,12 @@ function TicketDetail() {
   const { data: attachments = [], isLoading: isAttachmentsLoading } = useQuery({
     queryKey: ["ticket-attachments", ticketId],
     queryFn: () => getAttachments(ticketId),
+    enabled: Number.isInteger(ticketId),
+  });
+
+  const { data: auditLogs = [], isLoading: isAuditLogsLoading } = useQuery({
+    queryKey: ["ticket-audit-logs", ticketId],
+    queryFn: () => getAuditLogs(ticketId),
     enabled: Number.isInteger(ticketId),
   });
 
@@ -82,6 +89,10 @@ function TicketDetail() {
       });
 
       queryClient.invalidateQueries({
+        queryKey: ["ticket-audit-logs", ticketId],
+      });
+
+      queryClient.invalidateQueries({
         queryKey: ["tickets"],
       });
 
@@ -118,6 +129,10 @@ function TicketDetail() {
 
       queryClient.invalidateQueries({
         queryKey: ["ticket-comments", ticketId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["ticket-audit-logs", ticketId],
       });
     },
 
@@ -679,6 +694,140 @@ function TicketDetail() {
                   >
                     Delete
                   </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </Card>
+      <Card className="mt-6 p-6">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Audit History</h2>
+
+          <p className="mt-1 text-sm text-gray-500">
+            Record of changes and activities on this ticket.
+          </p>
+        </div>
+
+        <div className="mt-6">
+          {isAuditLogsLoading ? (
+            <p className="text-sm text-gray-500">Loading audit history...</p>
+          ) : auditLogs.length === 0 ? (
+            <p className="text-sm text-gray-500">No audit history.</p>
+          ) : (
+            <div className="space-y-4">
+              {auditLogs.map((log) => (
+                <div
+                  key={log.id}
+                  className="rounded-lg border border-gray-200 p-4"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`rounded-md px-2 py-1 text-xs font-semibold ${
+                            log.action === "STATUS_CHANGED"
+                              ? "bg-blue-50 text-blue-700"
+                              : log.action === "TICKET_ASSIGNED"
+                                ? "bg-purple-50 text-purple-700"
+                                : log.action === "COMMENT_ADDED"
+                                  ? "bg-green-50 text-green-700"
+                                  : log.action === "ATTACHMENT_UPLOADED"
+                                    ? "bg-indigo-50 text-indigo-700"
+                                    : log.action === "ATTACHMENT_DELETED"
+                                      ? "bg-red-50 text-red-700"
+                                      : log.action === "TICKET_CREATED"
+                                        ? "bg-gray-100 text-gray-700"
+                                        : "bg-yellow-50 text-yellow-700"
+                          }`}
+                        >
+                          {log.action
+                            .replaceAll("_", " ")
+                            .replace("TICKET CREATED", "Ticket Created")
+                            .replace("TICKET UPDATED", "Ticket Updated")
+                            .replace("TICKET ASSIGNED", "Ticket Assigned")
+                            .replace("STATUS CHANGED", "Status Changed")
+                            .replace("COMMENT ADDED", "Comment Added")
+                            .replace(
+                              "ATTACHMENT UPLOADED",
+                              "Attachment Uploaded",
+                            )
+                            .replace(
+                              "ATTACHMENT DELETED",
+                              "Attachment Deleted",
+                            )}
+                        </span>
+                      </div>
+
+                      <p className="mt-2 text-sm font-medium text-gray-900">
+                        {log.description}
+                      </p>
+
+                      <p className="mt-1 text-xs text-gray-500">
+                        {log.user?.name ?? "System"}
+                        {" • "}
+                        {new Date(log.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  {(log.old_values || log.new_values) && (
+                    <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                      {log.old_values && (
+                        <div className="rounded-lg bg-gray-50 p-3">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            Previous
+                          </p>
+
+                          <div className="mt-2 space-y-1">
+                            {Object.entries(log.old_values).map(
+                              ([key, value]) => (
+                                <div
+                                  key={key}
+                                  className="flex justify-between gap-4 text-xs"
+                                >
+                                  <span className="text-gray-500">
+                                    {key.replaceAll("_", " ")}
+                                  </span>
+
+                                  <span className="text-right font-medium text-gray-700">
+                                    {String(value ?? "-")}
+                                  </span>
+                                </div>
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {log.new_values && (
+                        <div className="rounded-lg bg-gray-50 p-3">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            New
+                          </p>
+
+                          <div className="mt-2 space-y-1">
+                            {Object.entries(log.new_values).map(
+                              ([key, value]) => (
+                                <div
+                                  key={key}
+                                  className="flex justify-between gap-4 text-xs"
+                                >
+                                  <span className="text-gray-500">
+                                    {key.replaceAll("_", " ")}
+                                  </span>
+
+                                  <span className="text-right font-medium text-gray-700">
+                                    {String(value ?? "-")}
+                                  </span>
+                                </div>
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

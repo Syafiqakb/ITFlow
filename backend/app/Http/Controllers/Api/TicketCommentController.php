@@ -7,6 +7,7 @@ use App\Models\Ticket;
 use App\Models\TicketComment;
 use App\Models\User;
 use App\Services\NotificationService;
+use App\Services\AuditLogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -39,7 +40,8 @@ class TicketCommentController extends Controller
     public function store(
         Request $request,
         Ticket $ticket,
-        NotificationService $notificationService
+        NotificationService $notificationService,
+        AuditLogService $auditLogService
     ): JsonResponse {
         $validated = $request->validate([
             'comment' => [
@@ -53,6 +55,17 @@ class TicketCommentController extends Controller
             'user_id' => $request->user()->id,
             'comment' => $validated['comment'],
         ]);
+
+        $auditLogService->log(
+            $request->user(),
+            $ticket,
+            'COMMENT_ADDED',
+            "A comment was added to ticket {$ticket->ticket_number}.",
+            null,
+            [
+                'comment_id' => $comment->id,
+            ]
+        );
 
         if (
             !$ticket->first_responded_at &&

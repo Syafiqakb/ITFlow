@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
+use App\Services\AuditLogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -37,7 +38,8 @@ class TicketAttachmentController extends Controller
 
     public function store(
         Request $request,
-        Ticket $ticket
+        Ticket $ticket,
+        AuditLogService $auditLogService
     ): JsonResponse {
         $validated = $request->validate([
             'file' => [
@@ -66,6 +68,19 @@ class TicketAttachmentController extends Controller
 
         $attachment->load('user');
 
+        $auditLogService->log(
+            $request->user(),
+            $ticket,
+            'ATTACHMENT_UPLOADED',
+            "Attachment {$attachment->original_name} was uploaded to ticket {$ticket->ticket_number}.",
+            null,
+            [
+                'attachment_id' => $attachment->id,
+                'file_name' => $attachment->original_name,
+                'file_size' => $attachment->file_size,
+            ]
+        );
+
         return response()->json([
             'message' => 'Attachment uploaded successfully.',
             'data' => [
@@ -84,14 +99,29 @@ class TicketAttachmentController extends Controller
     }
 
     public function destroy(
+        Request $request,
         Ticket $ticket,
-        int $attachment
+        int $attachment,
+        AuditLogService $auditLogService
     ): JsonResponse {
         $ticketAttachment = $ticket->attachments()
             ->findOrFail($attachment);
 
         Storage::disk('public')->delete(
             $ticketAttachment->file_path
+        );
+
+        $auditLogService->log(
+            $request->user(),
+            $ticket,
+            'ATTACHMENT_DELETED',
+            "Attachment {$ticketAttachment->original_name} was deleted from ticket {$ticket->ticket_number}.",
+            [
+                'attachment_id' => $ticketAttachment->id,
+                'file_name' => $ticketAttachment->original_name,
+                'file_size' => $ticketAttachment->file_size,
+            ],
+            null
         );
 
         $ticketAttachment->delete();

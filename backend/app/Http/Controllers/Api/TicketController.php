@@ -11,6 +11,7 @@ use App\Models\TicketStatus;
 use App\Models\SlaPolicy;
 use App\Models\User;
 use App\Services\NotificationService;
+use App\Services\AuditLogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -73,7 +74,7 @@ class TicketController extends Controller
     /**
      * Store a newly created ticket.
      */
-    public function store(StoreTicketRequest $request, NotificationService $notificationService): TicketResource
+    public function store(StoreTicketRequest $request, NotificationService $notificationService, AuditLogService $auditLogService): TicketResource
     {
         $newStatus = TicketStatus::where('code', 'NEW')->firstOrFail();
 
@@ -99,6 +100,20 @@ class TicketController extends Controller
             'status_id' => $newStatus->id,
             'due_at' => $dueAt,
         ]);
+
+        $auditLogService->log(
+            $request->user(),
+            $ticket,
+            'TICKET_CREATED',
+            "Ticket {$ticket->ticket_number} was created.",
+            null,
+            [
+                'title' => $ticket->title,
+                'category_id' => $ticket->category_id,
+                'priority_id' => $ticket->priority_id,
+                'status_id' => $ticket->status_id,
+            ]
+        );
 
         $users = User::whereHas('role', function ($query) {
             $query->whereIn('code', [
@@ -150,7 +165,8 @@ class TicketController extends Controller
     public function update(
         UpdateTicketRequest $request,
         Ticket $ticket,
-        NotificationService $notificationService
+        NotificationService $notificationService,
+        AuditLogService $auditLogService
     ): TicketResource {
         $data = $request->validated();
 
@@ -223,7 +239,68 @@ class TicketController extends Controller
             }
         }
 
+        if (
+            array_key_exists('assigned_to', $data) &&
+            $data['assigned_to'] !== $oldAssigneeId
+        ) {
+            $auditLogService->log(
+                $request->user(),
+                $ticket,
+                'TICKET_ASSIGNED',
+                "Ticket {$ticket->ticket_number} assignment was changed.",
+                [
+                    'assigned_to' => $oldAssigneeId,
+                ],
+                [
+                    'assigned_to' => $data['assigned_to'],
+                ]
+            );
+        }
+
+        $oldValues = [];
+
+        if (array_key_exists('title', $data)) {
+            $oldValues['title'] = $ticket->title;
+        }
+
+        if (array_key_exists('description', $data)) {
+            $oldValues['description'] = $ticket->description;
+        }
+
+        if (array_key_exists('category_id', $data)) {
+            $oldValues['category_id'] = $ticket->category_id;
+        }
+
+        if (array_key_exists('priority_id', $data)) {
+            $oldValues['priority_id'] = $ticket->priority_id;
+        }
+
         $ticket->update($data);
+
+        $newValues = [];
+
+        foreach ([
+            'title',
+            'description',
+            'category_id',
+            'priority_id',
+        ] as $field) {
+            if (array_key_exists($field, $data)) {
+                $newValues[$field] = $ticket->{$field};
+            }
+        }
+
+        if ($oldValues !== $newValues) {
+            $auditLogService->log(
+                $request->user(),
+                $ticket,
+                'TICKET_UPDATED',
+                "Ticket {$ticket->ticket_number} details were updated.",
+                $oldValues,
+                $newValues
+            );
+        }
+
         $ticket->refresh();
         $ticket->load('status');
 
@@ -273,6 +350,24 @@ class TicketController extends Controller
                 'Ticket Status Updated',
                 "Ticket {$ticket->ticket_number} status has been changed to {$ticket->status?->name}.",
                 $ticket
+            );
+        }
+
+        if (
+            isset($data['status_id']) &&
+            $oldStatusCode !== $ticket->status?->code
+        ) {
+            $auditLogService->log(
+                $request->user(),
+                $ticket,
+                'STATUS_CHANGED',
+                "Ticket {$ticket->ticket_number} status changed from {$oldStatusCode} to {$ticket->status?->code}.",
+                [
+                    'status' => $oldStatusCode,
+                ],
+                [
+                    'status' => $ticket->status?->code,
+                ]
             );
         }
 

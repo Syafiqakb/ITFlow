@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\TicketController;
 use App\Http\Controllers\Api\TicketCommentController;
 use App\Http\Controllers\Api\TicketAttachmentController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\AuditLogController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -65,4 +66,10 @@ Route::middleware('auth:sanctum')->group(function () {
         '/notifications/read-all',
         [NotificationController::class, 'markAllAsRead']
     );
+
+    Route::get(
+        '/tickets/{ticket}/audit-logs',
+        [AuditLogController::class, 'index']
+    );
+
 });
