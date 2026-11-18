@@ -56,6 +56,36 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
+    public function hasRole(string $roleCode): bool
+    {
+        return $this->role?->code === $roleCode;
+    }
+    
+    public function hasAnyRole(array $roleCodes): bool
+    {
+        return in_array($this->role?->code, $roleCodes, true);
+    }
+    
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('ADMIN');
+    }
+    
+    public function isManager(): bool
+    {
+        return $this->hasRole('IT_MANAGER');
+    }
+    
+    public function isSupport(): bool
+    {
+        return $this->hasRole('IT_SUPPORT');
+    }
+    
+    public function isEmployee(): bool
+    {
+        return $this->hasRole('EMPLOYEE');
+    }
+
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);

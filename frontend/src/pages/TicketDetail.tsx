@@ -9,6 +9,7 @@ import { getUsers } from "../services/users";
 import { getTicket, updateTicket } from "../services/tickets";
 import { getComments, createComment } from "../services/comments";
 import { deleteAttachment, getAttachments, uploadAttachment } from "../services/attachments";
+import { hasAnyRole } from "../utils/auth";
 import { getAuditLogs } from "../services/auditLogs";
 
 function TicketDetail() {
@@ -44,9 +45,16 @@ function TicketDetail() {
     enabled: Number.isInteger(ticketId),
   });
 
+  const canAssignTicket = hasAnyRole([
+    "Administrator",
+    "IT Manager",
+    "IT Support",
+  ]);
+
   const { data: users = [], isLoading: isUsersLoading } = useQuery({
     queryKey: ["users"],
     queryFn: getUsers,
+    enabled: canAssignTicket,
   });
 
   const queryClient = useQueryClient();
@@ -470,21 +478,27 @@ function TicketDetail() {
                 Status
               </label>
 
-              <select
-                value={statusId ?? ""}
-                onChange={(e) => setStatusId(Number(e.target.value))}
-                className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-500 focus:outline-none"
-              >
-                <option value={ticket?.status.id ?? ""}>
-                  {ticket?.status.name ?? "Current status"}
-                </option>
-
-                {getAllowedStatuses().map((status) => (
-                  <option key={status.id} value={status.id}>
-                    {status.code}
+              {canAssignTicket ? (
+                <select
+                  value={statusId ?? ""}
+                  onChange={(e) => setStatusId(Number(e.target.value))}
+                  className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-500 focus:outline-none"
+                >
+                  <option value={ticket?.status.id ?? ""}>
+                    {ticket?.status.name ?? "Current status"}
                   </option>
-                ))}
-              </select>
+
+                  {getAllowedStatuses().map((status) => (
+                    <option key={status.id} value={status.id}>
+                      {status.code}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="mt-1 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+                  {ticket?.status.name ?? "-"}
+                </div>
+              )}
             </div>
 
             {/* Priority */}
@@ -493,58 +507,70 @@ function TicketDetail() {
                 Priority
               </label>
 
-              <select
-                value={priorityId ?? ""}
-                onChange={(e) => setPriorityId(Number(e.target.value))}
-                className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-500 focus:outline-none"
-              >
-                <option value="">Select priority</option>
-                <option value="1">LOW</option>
-                <option value="2">MEDIUM</option>
-                <option value="3">HIGH</option>
-                <option value="4">CRITICAL</option>
-              </select>
+              {canAssignTicket ? (
+                <select
+                  value={priorityId ?? ""}
+                  onChange={(e) => setPriorityId(Number(e.target.value))}
+                  className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-500 focus:outline-none"
+                >
+                  <option value="">Select priority</option>
+                  <option value="1">LOW</option>
+                  <option value="2">MEDIUM</option>
+                  <option value="3">HIGH</option>
+                  <option value="4">CRITICAL</option>
+                </select>
+              ) : (
+                <div className="mt-1 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+                  {ticket?.priority.name ?? "-"}
+                </div>
+              )}
             </div>
             {/* Assigned To */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Assigned To
-              </label>
+            {canAssignTicket && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Assigned To
+                </label>
 
-              <select
-                value={assignedTo ?? ""}
-                onChange={(e) =>
-                  setAssignedTo(e.target.value ? Number(e.target.value) : null)
-                }
-                disabled={isUsersLoading}
-                className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100"
-              >
-                <option value="">
-                  {isUsersLoading ? "Loading users..." : "Unassigned"}
-                </option>
-
-                {users.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.name}
-                    {user.role ? ` — ${user.role}` : ""}
+                <select
+                  value={assignedTo ?? ""}
+                  onChange={(e) =>
+                    setAssignedTo(
+                      e.target.value ? Number(e.target.value) : null,
+                    )
+                  }
+                  disabled={isUsersLoading}
+                  className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100"
+                >
+                  <option value="">
+                    {isUsersLoading ? "Loading users..." : "Unassigned"}
                   </option>
-                ))}
-              </select>
-            </div>
+
+                  {users.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.name}
+                      {user.role ? ` — ${user.role}` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           <div className="border-t px-6 py-4">
-            <Button
-              type="button"
-              onClick={() => updateMutation.mutate()}
-              disabled={
-                updateMutation.isPending ||
-                statusId === null ||
-                priorityId === null
-              }
-            >
-              {updateMutation.isPending ? "Updating..." : "Update Ticket"}
-            </Button>
+            {canAssignTicket && (
+              <Button
+                type="button"
+                onClick={() => updateMutation.mutate()}
+                disabled={
+                  updateMutation.isPending ||
+                  statusId === null ||
+                  priorityId === null
+                }
+              >
+                {updateMutation.isPending ? "Updating..." : "Update Ticket"}
+              </Button>
+            )}
           </div>
         </Card>
       </div>

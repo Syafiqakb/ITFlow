@@ -18,9 +18,20 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 
-    Route::get('/users', [UserController::class, 'index']);
+    Route::get('/users', [UserController::class, 'index'])
+        ->middleware('role:ADMIN,IT_MANAGER');
 
-    Route::apiResource('tickets', TicketController::class);
+    Route::apiResource('tickets', TicketController::class)
+        ->except(['update', 'destroy']);
+
+    Route::put('/tickets/{ticket}', [TicketController::class, 'update'])
+        ->middleware('role:ADMIN,IT_MANAGER,IT_SUPPORT');
+
+    Route::patch('/tickets/{ticket}', [TicketController::class, 'update'])
+        ->middleware('role:ADMIN,IT_MANAGER,IT_SUPPORT');
+
+    Route::delete('/tickets/{ticket}', [TicketController::class, 'destroy'])
+        ->middleware('role:ADMIN,IT_MANAGER');
 
     Route::get(
         '/tickets/{ticket}/comments',

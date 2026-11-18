@@ -31,6 +31,10 @@ class TicketController extends Controller
             'assignee',
         ]);
 
+        if ($request->user()->isEmployee()) {
+            $query->where('requester_id', $request->user()->id);
+        }
+
         if ($request->filled('search')) {
             $search = $request->string('search');
 
@@ -146,8 +150,15 @@ class TicketController extends Controller
     /**
      * Display the specified ticket.
      */
-    public function show(Ticket $ticket): TicketResource
+    public function show(Request $request, Ticket $ticket): TicketResource
     {
+        if (
+            $request->user()->isEmployee() &&
+            $ticket->requester_id !== $request->user()->id
+        ) {
+            abort(403, 'You are not authorized to access this ticket.');
+        }
+
         $ticket->load([
             'requester',
             'category',
