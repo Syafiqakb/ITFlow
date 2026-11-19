@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\AdminUserController;
+use App\Http\Controllers\Api\AdminTicketCategoryController;
+use App\Http\Controllers\Api\TicketCategoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -22,6 +24,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/users', [UserController::class, 'index'])
         ->middleware('role:ADMIN,IT_MANAGER');
+
+    Route::get('/ticket-categories', [TicketCategoryController::class, 'index']);
 
     Route::apiResource('tickets', TicketController::class)
         ->except(['update', 'destroy']);
@@ -138,4 +142,13 @@ Route::middleware('auth:sanctum')->group(function () {
         [AdminUserController::class, 'update'])
         ->middleware('role:ADMIN,IT_MANAGER'
         );
+
+    Route::get('/admin/categories', [AdminTicketCategoryController::class, 'index'])
+        ->middleware('role:ADMIN,IT_MANAGER');
+
+    Route::post('/admin/categories', [AdminTicketCategoryController::class, 'store'])
+        ->middleware('role:ADMIN,IT_MANAGER');
+
+    Route::put('/admin/categories/{ticketCategory}', [AdminTicketCategoryController::class, 'update'])
+        ->middleware('role:ADMIN,IT_MANAGER');
 });

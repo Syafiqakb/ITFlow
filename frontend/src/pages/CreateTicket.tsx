@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -10,6 +11,7 @@ import Input from "../components/Input";
 import Select from "../components/Select";
 import Textarea from "../components/Textarea";
 import { createTicket } from "../services/tickets";
+import { getActiveCategories } from "../services/categories";
 
 const createTicketSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
@@ -25,6 +27,15 @@ type CreateTicketForm = z.infer<typeof createTicketSchema>;
 
 function CreateTicket() {
   const [submitted] = useState(false);
+
+  const {
+    data: categories = [],
+    isLoading: categoriesLoading,
+    isError: categoriesError,
+  } = useQuery({
+    queryKey: ["active-categories"],
+    queryFn: getActiveCategories,
+  });
 
   const {
     register,
@@ -44,14 +55,7 @@ function CreateTicket() {
 
   const onSubmit = async (data: CreateTicketForm) => {
     try {
-      const categoryMap: Record<string, number> = {
-        hardware: 1,
-        software: 2,
-        network: 3,
-        access: 4,
-        email: 5,
-        other: 6,
-      };
+      const categoryId = Number(data.category);
 
       const priorityMap: Record<string, number> = {
         low: 1,
@@ -60,10 +64,7 @@ function CreateTicket() {
         critical: 4,
       };
 
-      const categoryKey = data.category.trim().toLowerCase();
       const priorityKey = data.priority.trim().toLowerCase();
-
-      const categoryId = categoryMap[categoryKey];
       const priorityId = priorityMap[priorityKey];
 
       if (!categoryId || !priorityId) {
@@ -148,12 +149,18 @@ function CreateTicket() {
                 error={errors.category?.message}
                 {...register("category")}
               >
-                <option value="">Select category</option>
-                <option value="hardware">Hardware</option>
-                <option value="software">Software</option>
-                <option value="network">Network</option>
-                <option value="access">Access & Account</option>
-                <option value="other">Other</option>
+                <option value="">
+                  {categoriesLoading
+                    ? "Loading categories..."
+                    : categoriesError
+                      ? "Unable to load categories"
+                      : "Select category"}
+                </option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
               </Select>
 
               <Select
