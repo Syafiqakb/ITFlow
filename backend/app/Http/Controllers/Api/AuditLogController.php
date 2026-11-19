@@ -6,11 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Ticket;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AuditLogController extends Controller
 {
-    public function index(Ticket $ticket): JsonResponse
+    public function index(Request $request, Ticket $ticket): JsonResponse
     {
+        if (
+            $request->user()->isEmployee() &&
+            $ticket->requester_id !== $request->user()->id
+        ) {
+            abort(403, 'You are not authorized to access this audit log.');
+        }
+
         $logs = AuditLog::query()
             ->where('ticket_id', $ticket->id)
             ->with('user')
