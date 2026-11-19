@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\TicketCommentController;
 use App\Http\Controllers\Api\TicketAttachmentController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\AuditLogController;
+use App\Http\Controllers\Api\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -81,6 +82,36 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get(
         '/tickets/{ticket}/audit-logs',
         [AuditLogController::class, 'index']
+    );
+
+    Route::get(
+        '/reports/tickets/status',
+        [ReportController::class, 'ticketStatus']
+        );
+
+    Route::get(
+        '/reports/tickets/priority',
+        [ReportController::class, 'ticketPriority']
+    );
+
+    Route::get(
+        '/reports/tickets/category',
+        [ReportController::class, 'ticketCategory']
+    );
+
+    Route::get(
+        '/reports/tickets/assignee',
+        [ReportController::class, 'ticketAssignee']
+    );
+
+    Route::get(
+        '/reports/tickets/trend',
+        [ReportController::class, 'ticketTrend']
+    );
+
+    Route::get(
+        '/reports/tickets/sla',
+        [ReportController::class, 'slaPerformance']
     );
 
 });
