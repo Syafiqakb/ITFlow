@@ -29,7 +29,9 @@ class AdminUserController extends Controller
                     'email' => $user->email,
                     'role' => $user->role?->name,
                     'role_code' => $user->role?->code,
+                    'role_id' => $user->role_id,
                     'department' => $user->department?->name,
+                    'department_id' => $user->department_id,
                     'is_active' => $user->is_active,
                 ];
             }),

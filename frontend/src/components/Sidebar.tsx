@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { hasAnyRole } from "../utils/auth";
 
 const menuItems = [
   {
@@ -16,6 +17,7 @@ const menuItems = [
 ];
 
 function Sidebar() {
+  const canManageUsers = hasAnyRole(["Administrator", "IT Manager"]);
   return (
     <aside className="flex h-screen w-64 flex-col border-r bg-white">
       <div className="border-b px-6 py-5">
@@ -62,7 +64,7 @@ function Sidebar() {
             All Tickets
           </NavLink>
         </div>
-
+        {canManageUsers && (
         <div className="pt-6">
           <p className="mb-2 px-3 text-xs font-semibold uppercase text-gray-400">
             Administration
@@ -94,6 +96,7 @@ function Sidebar() {
             Categories
           </NavLink>
         </div>
+        )}
       </nav>
 
       <div className="border-t p-4">

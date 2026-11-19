@@ -6,6 +6,7 @@ import NotFound from "./pages/NotFound";
 import CreateTicket from "./pages/CreateTicket";
 import Tickets from "./pages/Tickets";
 import TicketDetail from "./pages/TicketDetail";
+import UserManagement from "./pages/UserManagement";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/tickets" element={<Tickets />} />
           <Route path="/tickets/create" element={<CreateTicket />} />
           <Route path="/tickets/:id" element={<TicketDetail />} />
+          <Route path="/users" element={<UserManagement />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
