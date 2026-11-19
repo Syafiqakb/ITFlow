@@ -7,9 +7,20 @@ import {
   markAllNotificationsAsRead,
   markNotificationAsRead,
 } from "../services/notifications";
+import { getCurrentUser } from "../utils/auth";
 
 function Topbar() {
   const navigate = useNavigate();
+  const currentUser = getCurrentUser();
+
+  const userInitials =
+    currentUser?.name
+      ?.split(" ")
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() ?? "U";
+
   const queryClient = useQueryClient();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -177,12 +188,17 @@ function Topbar() {
 
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-900 text-sm font-medium text-white">
-            JD
+            {userInitials}
           </div>
 
           <div className="hidden sm:block">
-            <p className="text-sm font-medium text-gray-900">John Doe</p>
-            <p className="text-xs text-gray-500">IT Support</p>
+            <p className="text-sm font-medium text-gray-900">
+              {currentUser?.name ?? "User"}
+            </p>
+
+            <p className="text-xs text-gray-500">
+              {currentUser?.role ?? "User"}
+            </p>
           </div>
         </div>
       </div>

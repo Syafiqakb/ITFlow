@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { hasAnyRole } from "../utils/auth";
+import { getCurrentUser, hasAnyRole } from "../utils/auth";
 
 const menuItems = [
   {
@@ -17,6 +17,7 @@ const menuItems = [
 ];
 
 function Sidebar() {
+  const currentUser = getCurrentUser();
   const canManageUsers = hasAnyRole(["Administrator", "IT Manager"]);
   return (
     <aside className="flex h-screen w-64 flex-col border-r bg-white">
@@ -65,45 +66,46 @@ function Sidebar() {
           </NavLink>
         </div>
         {canManageUsers && (
-        <div className="pt-6">
-          <p className="mb-2 px-3 text-xs font-semibold uppercase text-gray-400">
-            Administration
-          </p>
+          <div className="pt-6">
+            <p className="mb-2 px-3 text-xs font-semibold uppercase text-gray-400">
+              Administration
+            </p>
 
-          <NavLink
-            to="/admin/users"
-            className={({ isActive }) =>
-              `block rounded-lg px-3 py-2 text-sm font-medium transition ${
-                isActive
-                  ? "bg-gray-900 text-white"
-                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-              }`
-            }
-          >
-            Users
-          </NavLink>
+            <NavLink
+              to="/admin/users"
+              className={({ isActive }) =>
+                `block rounded-lg px-3 py-2 text-sm font-medium transition ${
+                  isActive
+                    ? "bg-gray-900 text-white"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                }`
+              }
+            >
+              Users
+            </NavLink>
 
-          <NavLink
-            to="/admin/categories"
-            className={({ isActive }) =>
-              `block rounded-lg px-3 py-2 text-sm font-medium transition ${
-                isActive
-                  ? "bg-gray-900 text-white"
-                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-              }`
-            }
-          >
-            Categories
-          </NavLink>
-        </div>
+            <NavLink
+              to="/admin/categories"
+              className={({ isActive }) =>
+                `block rounded-lg px-3 py-2 text-sm font-medium transition ${
+                  isActive
+                    ? "bg-gray-900 text-white"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                }`
+              }
+            >
+              Categories
+            </NavLink>
+          </div>
         )}
       </nav>
 
-      <div className="border-t p-4">
-        <div className="rounded-lg bg-gray-50 p-3">
-          <p className="text-sm font-medium text-gray-900">John Doe</p>
-          <p className="text-xs text-gray-500">IT Support</p>
-        </div>
+      <div className="rounded-lg bg-gray-50 p-3">
+        <p className="text-sm font-medium text-gray-900">
+          {currentUser?.name ?? "User"}
+        </p>
+
+        <p className="text-xs text-gray-500">{currentUser?.role ?? "User"}</p>
       </div>
     </aside>
   );
