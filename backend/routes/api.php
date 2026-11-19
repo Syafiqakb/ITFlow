@@ -86,32 +86,37 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get(
         '/reports/tickets/status',
-        [ReportController::class, 'ticketStatus']
+        [ReportController::class, 'ticketStatus'])
+        ->middleware('role:ADMIN,IT_MANAGER,IT_SUPPORT'
         );
 
     Route::get(
         '/reports/tickets/priority',
-        [ReportController::class, 'ticketPriority']
-    );
+        [ReportController::class, 'ticketPriority'])
+        ->middleware('role:ADMIN,IT_MANAGER,IT_SUPPORT'
+        );
 
     Route::get(
         '/reports/tickets/category',
-        [ReportController::class, 'ticketCategory']
-    );
+        [ReportController::class, 'ticketCategory'])
+        ->middleware('role:ADMIN,IT_MANAGER,IT_SUPPORT'
+        );
 
     Route::get(
         '/reports/tickets/assignee',
-        [ReportController::class, 'ticketAssignee']
-    );
+        [ReportController::class, 'ticketAssignee'])
+        ->middleware('role:ADMIN,IT_MANAGER,IT_SUPPORT'
+        );
 
     Route::get(
         '/reports/tickets/trend',
-        [ReportController::class, 'ticketTrend']
-    );
+        [ReportController::class, 'ticketTrend'])
+        ->middleware('role:ADMIN,IT_MANAGER,IT_SUPPORT'
+        );
 
     Route::get(
         '/reports/tickets/sla',
-        [ReportController::class, 'slaPerformance']
-    );
-
+        [ReportController::class, 'slaPerformance'])
+        ->middleware('role:ADMIN,IT_MANAGER,IT_SUPPORT'
+        );
 });
