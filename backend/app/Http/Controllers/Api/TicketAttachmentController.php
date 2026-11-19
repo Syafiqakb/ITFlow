@@ -11,8 +11,15 @@ use Illuminate\Support\Facades\Storage;
 
 class TicketAttachmentController extends Controller
 {
-    public function index(Ticket $ticket): JsonResponse
+    public function index(Request $request, Ticket $ticket): JsonResponse
     {
+        if (
+        $request->user()->isEmployee() &&
+            $ticket->requester_id !== $request->user()->id
+        ) {
+            abort(403, 'You are not authorized to access this ticket.');
+        }
+
         $attachments = $ticket->attachments()
             ->with('user')
             ->latest()
@@ -41,6 +48,13 @@ class TicketAttachmentController extends Controller
         Ticket $ticket,
         AuditLogService $auditLogService
     ): JsonResponse {
+        if (
+            $request->user()->isEmployee() &&
+            $ticket->requester_id !== $request->user()->id
+        ) {
+            abort(403, 'You are not authorized to access this ticket.');
+        }
+
         $validated = $request->validate([
             'file' => [
                 'required',
@@ -104,6 +118,13 @@ class TicketAttachmentController extends Controller
         int $attachment,
         AuditLogService $auditLogService
     ): JsonResponse {
+        if (!$request->user()->hasAnyRole([
+            'ADMIN',
+            'IT_MANAGER',
+        ])) {
+            abort(403, 'You are not authorized to delete attachments.');
+        }
+        
         $ticketAttachment = $ticket->attachments()
             ->findOrFail($attachment);
 

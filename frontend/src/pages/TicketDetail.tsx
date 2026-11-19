@@ -51,6 +51,11 @@ function TicketDetail() {
     "IT Support",
   ]);
 
+  const canDeleteAttachment = hasAnyRole([
+    "Administrator",
+    "IT Manager"
+  ]);
+
   const { data: users = [], isLoading: isUsersLoading } = useQuery({
     queryKey: ["users"],
     queryFn: getUsers,
@@ -707,6 +712,7 @@ function TicketDetail() {
                     </p>
                   </div>
 
+                  {canDeleteAttachment && (
                   <Button
                     type="button"
                     variant="danger"
@@ -720,6 +726,7 @@ function TicketDetail() {
                   >
                     Delete
                   </Button>
+                  )}
                 </div>
               ))}
             </div>

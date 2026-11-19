@@ -13,8 +13,15 @@ use Illuminate\Http\Request;
 
 class TicketCommentController extends Controller
 {
-    public function index(Ticket $ticket): JsonResponse
+    public function index(Request $request, Ticket $ticket): JsonResponse
     {
+        if (
+            $request->user()->isEmployee() &&
+            $ticket->requester_id !== $request->user()->id
+        ) {
+            abort(403, 'You are not authorized to access this ticket.');
+        }
+
         $comments = $ticket->comments()
             ->with('user')
             ->latest()
@@ -43,6 +50,14 @@ class TicketCommentController extends Controller
         NotificationService $notificationService,
         AuditLogService $auditLogService
     ): JsonResponse {
+
+        if (
+            $request->user()->isEmployee() &&
+            $ticket->requester_id !== $request->user()->id
+        ) {
+            abort(403, 'You are not authorized to access this ticket.');
+        }
+
         $validated = $request->validate([
             'comment' => [
                 'required',
