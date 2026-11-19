@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\TicketAttachmentController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\AdminUserController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -118,5 +119,23 @@ Route::middleware('auth:sanctum')->group(function () {
         '/reports/tickets/sla',
         [ReportController::class, 'slaPerformance'])
         ->middleware('role:ADMIN,IT_MANAGER,IT_SUPPORT'
+        );
+
+    Route::get(
+        '/admin/users',
+        [AdminUserController::class, 'index'])
+        ->middleware('role:ADMIN,IT_MANAGER'
+        );
+
+    Route::post(
+        '/admin/users',
+        [AdminUserController::class, 'store'])
+        ->middleware('role:ADMIN,IT_MANAGER'
+        );
+
+    Route::put(
+        '/admin/users/{user}',
+        [AdminUserController::class, 'update'])
+        ->middleware('role:ADMIN,IT_MANAGER'
         );
 });
