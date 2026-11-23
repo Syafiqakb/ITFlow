@@ -8,6 +8,7 @@ import Tickets from "./pages/Tickets";
 import TicketDetail from "./pages/TicketDetail";
 import UserManagement from "./pages/UserManagement";
 import CategoryManagement from "./pages/CategoryManagement";
+import DepartmentManagement from "./pages/DepartmentManagement";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/tickets/:id" element={<TicketDetail />} />
           <Route path="/users" element={<UserManagement />} />
           <Route path="/admin/categories" element={<CategoryManagement />} />
+          <Route path="/admin/departments" element={<DepartmentManagement />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

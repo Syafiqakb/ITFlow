@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\AdminUserController;
 use App\Http\Controllers\Api\AdminTicketCategoryController;
 use App\Http\Controllers\Api\TicketCategoryController;
+use App\Http\Controllers\Api\AdminDepartmentController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -150,5 +151,14 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('role:ADMIN,IT_MANAGER');
 
     Route::put('/admin/categories/{ticketCategory}', [AdminTicketCategoryController::class, 'update'])
+        ->middleware('role:ADMIN,IT_MANAGER');
+
+    Route::get('/admin/departments', [AdminDepartmentController::class, 'index'])
+        ->middleware('role:ADMIN,IT_MANAGER');
+
+    Route::post('/admin/departments', [AdminDepartmentController::class, 'store'])
+        ->middleware('role:ADMIN,IT_MANAGER');
+
+    Route::put('/admin/departments/{department}', [AdminDepartmentController::class, 'update'])
         ->middleware('role:ADMIN,IT_MANAGER');
 });
