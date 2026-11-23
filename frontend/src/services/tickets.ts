@@ -18,6 +18,12 @@ export interface Ticket {
     code: string;
   };
 
+  service_catalog: {
+    id: number;
+    name: string;
+    code: string;
+  } | null;
+
   priority: {
     id: number;
     name: string;
@@ -78,6 +84,7 @@ export interface CreateTicketPayload {
   description: string;
   category_id: number;
   priority_id: number;
+  service_catalog_id?: number;
 }
 
 export async function createTicket(

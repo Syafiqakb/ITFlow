@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\ServiceCatalog;
 
 class Ticket extends Model
 {
@@ -15,6 +16,7 @@ class Ticket extends Model
         'description',
         'requester_id',
         'category_id',
+        'service_catalog_id',
         'priority_id',
         'status_id',
         'assigned_to',
@@ -90,5 +92,10 @@ class Ticket extends Model
     public function auditLogs(): HasMany
     {
         return $this->hasMany(AuditLog::class);
+    }
+
+    public function serviceCatalog(): BelongsTo
+    {
+        return $this->belongsTo(ServiceCatalog::class, 'service_catalog_id');
     }
 }

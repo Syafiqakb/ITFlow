@@ -39,6 +39,12 @@ class StoreTicketRequest extends FormRequest
                 'exists:ticket_categories,id',
             ],
 
+            'service_catalog_id' => [
+                'nullable',
+                'integer',
+                'exists:service_catalogs,id',
+            ],
+
             'priority_id' => [
                 'required',
                 'integer',

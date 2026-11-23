@@ -61,6 +61,7 @@ function ServiceRequest() {
         description: `${data.description}\n\nService Detail: ${data.service_detail}`,
         category_id: service.category_id,
         priority_id: data.priority_id,
+        service_catalog_id: service.id,
       });
     },
 

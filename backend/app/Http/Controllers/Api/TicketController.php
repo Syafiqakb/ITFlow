@@ -26,6 +26,7 @@ class TicketController extends Controller
         $query = Ticket::with([
             'requester',
             'category',
+            'serviceCatalog',
             'priority',
             'status',
             'assignee',
@@ -100,6 +101,7 @@ class TicketController extends Controller
             'description' => $request->validated('description'),
             'requester_id' => $request->user()->id,
             'category_id' => $request->validated('category_id'),
+            'service_catalog_id' => $request->validated('service_catalog_id'),
             'priority_id' => $request->validated('priority_id'),
             'status_id' => $newStatus->id,
             'due_at' => $dueAt,
@@ -139,6 +141,7 @@ class TicketController extends Controller
         $ticket->load([
             'requester',
             'category',
+            'serviceCatalog',
             'priority',
             'status',
             'assignee',
@@ -162,6 +165,7 @@ class TicketController extends Controller
         $ticket->load([
             'requester',
             'category',
+            'serviceCatalog',
             'priority',
             'status',
             'assignee',
@@ -385,6 +389,7 @@ class TicketController extends Controller
         $ticket->load([
             'requester',
             'category',
+            'serviceCatalog',
             'priority',
             'status',
             'assignee',

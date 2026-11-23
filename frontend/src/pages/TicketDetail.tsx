@@ -344,6 +344,20 @@ function TicketDetail() {
               </div>
 
               <div className="px-6 py-4">
+                <p className="text-xs text-gray-500">Service Catalog</p>
+
+                <p className="mt-1 text-sm font-medium text-gray-900">
+                  {ticket.service_catalog?.name ?? "General Ticket"}
+                </p>
+
+                {ticket.service_catalog && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    {ticket.service_catalog.code}
+                  </p>
+                )}
+              </div>
+
+              <div className="px-6 py-4">
                 <p className="text-xs text-gray-500">Priority</p>
 
                 <div className="mt-1">

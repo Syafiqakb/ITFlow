@@ -33,6 +33,14 @@ class TicketResource extends JsonResource
                 'code' => $this->category?->code,
             ],
 
+            'service_catalog' => $this->serviceCatalog
+                ? [
+                    'id' => $this->serviceCatalog->id,
+                    'name' => $this->serviceCatalog->name,
+                    'code' => $this->serviceCatalog->code,
+                ]
+                : null,
+
             'priority' => [
                 'id' => $this->priority?->id,
                 'name' => $this->priority?->name,
