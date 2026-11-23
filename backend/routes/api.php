@@ -15,6 +15,8 @@ use App\Http\Controllers\Api\TicketCategoryController;
 use App\Http\Controllers\Api\AdminDepartmentController;
 use App\Http\Controllers\Api\KnowledgeArticleController;
 use App\Http\Controllers\Api\KnowledgeArticleFeedbackController;
+use App\Http\Controllers\Api\ServiceCatalogController;
+use App\Http\Controllers\Api\AdminServiceCatalogController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -188,4 +190,21 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('role:ADMIN,IT_MANAGER');
 
     Route::post('/knowledge-articles/{knowledgeArticle}/feedback',[KnowledgeArticleFeedbackController::class, 'store']);
+
+    Route::get('/service-catalogs',[ServiceCatalogController::class, 'index']);
+
+    Route::get('/service-catalogs',[ServiceCatalogController::class, 'index']);
+
+    Route::get('/admin/service-catalogs', [AdminServiceCatalogController::class, 'index'])
+        ->middleware('role:ADMIN,IT_MANAGER');
+
+    Route::post('/admin/service-catalogs', [AdminServiceCatalogController::class, 'store'])
+        ->middleware('role:ADMIN,IT_MANAGER');
+
+    Route::put('/admin/service-catalogs/{serviceCatalog}', [AdminServiceCatalogController::class, 'update'])
+        ->middleware('role:ADMIN,IT_MANAGER');
+
+    Route::delete('/admin/service-catalogs/{serviceCatalog}', [AdminServiceCatalogController::class, 'destroy'])
+        ->middleware('role:ADMIN,IT_MANAGER');
+
 });

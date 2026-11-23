@@ -18,6 +18,10 @@ const menuItems = [
     label: "Knowledge Base",
     path: "/knowledge-base",
   },
+  {
+    label: "Service Catalog",
+    path: "/service-catalog",
+  },
 ];
 
 function Sidebar() {
@@ -101,8 +105,9 @@ function Sidebar() {
               Categories
             </NavLink>
 
-            <NavLink to="/admin/departments"
-            className={({ isActive }) =>
+            <NavLink
+              to="/admin/departments"
+              className={({ isActive }) =>
                 `block rounded-lg px-3 py-2 text-sm font-medium transition ${
                   isActive
                     ? "bg-gray-900 text-white"
@@ -110,7 +115,20 @@ function Sidebar() {
                 }`
               }
             >
-              Departments</NavLink>
+              Departments
+            </NavLink>
+            <NavLink
+              to="/admin/service-catalog"
+              className={({ isActive }) =>
+                `block rounded-lg px-3 py-2 text-sm font-medium transition ${
+                  isActive
+                    ? "bg-gray-900 text-white"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                }`
+              }
+            >
+              Service Catalog
+            </NavLink>
           </div>
         )}
       </nav>

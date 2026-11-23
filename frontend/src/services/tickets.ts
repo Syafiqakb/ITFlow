@@ -80,6 +80,14 @@ export interface CreateTicketPayload {
   priority_id: number;
 }
 
+export async function createTicket(
+  payload: CreateTicketPayload,
+): Promise<Ticket> {
+  const response = await api.post<{ data: Ticket }>("/tickets", payload);
+
+  return response.data.data;
+}
+
 export async function getTickets(
   page = 1,
   filters: TicketFilters = {},
@@ -100,14 +108,6 @@ export async function getTickets(
 
 export async function getTicket(id: number): Promise<Ticket> {
   const response = await api.get<{ data: Ticket }>(`/tickets/${id}`);
-
-  return response.data.data;
-}
-
-export async function createTicket(
-  payload: CreateTicketPayload,
-): Promise<Ticket> {
-  const response = await api.post<{ data: Ticket }>("/tickets", payload);
 
   return response.data.data;
 }

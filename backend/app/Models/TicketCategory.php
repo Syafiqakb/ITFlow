@@ -12,6 +12,8 @@ class TicketCategory extends Model
         'name',
         'code',
         'description',
+        'icon',
+        'category_id',
         'is_active',
     ];
 

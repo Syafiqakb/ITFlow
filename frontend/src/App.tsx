@@ -14,6 +14,10 @@ import KnowledgeArticleDetail from "./pages/KnowledgeArticleDetail";
 import KnowledgeBaseManagement from "./pages/admin/KnowledgeBaseManagement";
 import KnowledgeArticleCreate from "./pages/admin/KnowledgeArticleCreate";
 import KnowledgeArticleEdit from "./pages/admin/KnowledgeArticleEdit";
+import ServiceCatalog from "./pages/ServiceCatalog";
+import ServiceRequest from "./pages/ServiceRequest";
+import ServiceCatalogManagement from "./pages/ServiceCatalogManagement";
+import RoleRoute from "./components/RoleRoute";
 
 function App() {
   return (
@@ -35,7 +39,12 @@ function App() {
           <Route path="/admin/knowledge-base" element={<KnowledgeBaseManagement />}/>
           <Route path="/admin/knowledge-base/create" element={<KnowledgeArticleCreate />}/>
           <Route path="/admin/knowledge-base/:id/edit" element={<KnowledgeArticleEdit />}/>
-        </Route>
+          <Route path="/service-catalog" element={<ServiceCatalog />}/>
+          <Route path="/service-catalog/:id" element={<ServiceRequest />}/>
+          <Route element={<RoleRoute roles={["Administrator", "IT Manager"]} />}>
+            <Route path="/admin/service-catalog" element={<ServiceCatalogManagement />}/>
+            </Route>
+          </Route>
 
         <Route path="*" element={<NotFound />} />
       </Routes>
