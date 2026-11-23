@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\AdminUserController;
 use App\Http\Controllers\Api\AdminTicketCategoryController;
 use App\Http\Controllers\Api\TicketCategoryController;
 use App\Http\Controllers\Api\AdminDepartmentController;
+use App\Http\Controllers\Api\KnowledgeArticleController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -160,5 +161,18 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('role:ADMIN,IT_MANAGER');
 
     Route::put('/admin/departments/{department}', [AdminDepartmentController::class, 'update'])
+        ->middleware('role:ADMIN,IT_MANAGER');
+
+    Route::get('/knowledge-articles', [KnowledgeArticleController::class, 'index']);
+
+    Route::get('/knowledge-articles/{knowledgeArticle}', [KnowledgeArticleController::class, 'show']);
+
+    Route::post('/knowledge-articles', [KnowledgeArticleController::class, 'store'])
+        ->middleware('role:ADMIN,IT_MANAGER,IT_SUPPORT');
+
+    Route::put('/knowledge-articles/{knowledgeArticle}', [KnowledgeArticleController::class, 'update'])
+        ->middleware('role:ADMIN,IT_MANAGER,IT_SUPPORT');
+
+    Route::delete('/knowledge-articles/{knowledgeArticle}', [KnowledgeArticleController::class, 'destroy'])
         ->middleware('role:ADMIN,IT_MANAGER');
 });

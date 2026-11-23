@@ -113,4 +113,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(AuditLog::class);
     }
+
+    public function knowledgeArticles(): HasMany
+    {
+        return $this->hasMany(KnowledgeArticle::class, 'author_id');
+    }
 }
