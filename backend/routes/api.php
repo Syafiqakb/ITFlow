@@ -166,10 +166,20 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/knowledge-articles', [KnowledgeArticleController::class, 'index']);
 
-    Route::get('/knowledge-articles/{knowledgeArticle}', [KnowledgeArticleController::class, 'show']);
-
     Route::post('/knowledge-articles', [KnowledgeArticleController::class, 'store'])
         ->middleware('role:ADMIN,IT_MANAGER,IT_SUPPORT');
+
+    Route::get('/admin/knowledge-articles',[KnowledgeArticleController::class, 'managementIndex'])
+        ->middleware('role:ADMIN,IT_MANAGER,IT_SUPPORT');
+
+    Route::get('/admin/knowledge-articles/{knowledgeArticle}',[KnowledgeArticleController::class, 'managementShow'])
+        ->middleware('role:ADMIN,IT_MANAGER,IT_SUPPORT');
+
+    Route::get('/admin/knowledge-articles/{knowledgeArticle}',[KnowledgeArticleController::class, 'managementShow'])
+        ->middleware('role:ADMIN,IT_MANAGER,IT_SUPPORT');
+
+    Route::get('/knowledge-articles/{knowledgeArticle}', [KnowledgeArticleController::class, 'show']);
+
 
     Route::put('/knowledge-articles/{knowledgeArticle}', [KnowledgeArticleController::class, 'update'])
         ->middleware('role:ADMIN,IT_MANAGER,IT_SUPPORT');

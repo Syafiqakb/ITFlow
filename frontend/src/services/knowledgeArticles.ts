@@ -25,6 +25,11 @@ interface KnowledgeArticlesResponse {
   data: KnowledgeArticle[];
 }
 
+interface KnowledgeArticleMutationResponse {
+  message: string;
+  data: KnowledgeArticle;
+}
+
 interface KnowledgeArticleResponse {
   data: KnowledgeArticle;
 }
@@ -53,6 +58,16 @@ export async function getKnowledgeArticles(
   return response.data.data;
 }
 
+export async function getKnowledgeArticleForManagement(
+  id: number,
+): Promise<KnowledgeArticle> {
+  const response = await api.get<KnowledgeArticleResponse>(
+    `/admin/knowledge-articles/${id}`,
+  );
+
+  return response.data.data;
+}
+
 export async function getKnowledgeArticle(
   id: number,
 ): Promise<KnowledgeArticle> {
@@ -71,6 +86,58 @@ export async function submitKnowledgeArticleFeedback(
     `/knowledge-articles/${id}/feedback`,
     {
       helpful,
+    },
+  );
+
+  return response.data.data;
+}
+
+export interface KnowledgeArticlePayload {
+  title: string;
+  slug: string;
+  content: string;
+  category: string;
+  status: "DRAFT" | "PUBLISHED";
+}
+
+export async function createKnowledgeArticle(
+  payload: KnowledgeArticlePayload,
+): Promise<KnowledgeArticle> {
+  const response = await api.post<KnowledgeArticleMutationResponse>(
+    "/knowledge-articles",
+    payload,
+  );
+
+  return response.data.data;
+}
+
+export async function updateKnowledgeArticle(
+  id: number,
+  payload: KnowledgeArticlePayload,
+): Promise<KnowledgeArticle> {
+  const response = await api.put<KnowledgeArticleMutationResponse>(
+    `/knowledge-articles/${id}`,
+    payload,
+  );
+
+  return response.data.data;
+}
+
+export async function deleteKnowledgeArticle(id: number): Promise<void> {
+  await api.delete(`/knowledge-articles/${id}`);
+}
+
+export async function getKnowledgeArticlesForManagement(
+  search?: string,
+  category?: string,
+): Promise<KnowledgeArticle[]> {
+  const response = await api.get<KnowledgeArticlesResponse>(
+    "/admin/knowledge-articles",
+    {
+      params: {
+        search: search || undefined,
+        category: category || undefined,
+      },
     },
   );
 

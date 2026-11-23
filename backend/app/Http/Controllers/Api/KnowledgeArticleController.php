@@ -13,11 +13,57 @@ use Illuminate\Support\Str;
 
 class KnowledgeArticleController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function managementIndex(Request $request): JsonResponse
     {
         $articles = KnowledgeArticle::query()
             ->with('author:id,name')
-            ->where('status', 'PUBLISHED')
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->string('search');
+
+                $query->where(function ($query) use ($search) {
+                    $query
+                        ->where('title', 'like', "%{$search}%")
+                        ->orWhere('content', 'like', "%{$search}%")
+                        ->orWhere('category', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->filled('category'), function ($query) use ($request) {
+                $query->where('category', $request->string('category'));
+            })
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'data' => $articles->map(function ($article) {
+                return [
+                    'id' => $article->id,
+                    'title' => $article->title,
+                    'slug' => $article->slug,
+                    'content' => $article->content,
+                    'category' => $article->category,
+                    'status' => $article->status,
+                    'views' => $article->views,
+                    'helpful_count' => $article->helpful_count,
+                    'not_helpful_count' => $article->not_helpful_count,
+                    'author' => $article->author
+                        ? [
+                            'id' => $article->author->id,
+                            'name' => $article->author->name,
+                        ]
+                        : null,
+                    'created_at' => $article->created_at,
+                    'updated_at' => $article->updated_at,
+                ];
+            }),
+        ]);
+    }
+    public function index(Request $request): JsonResponse
+    {
+        $query = KnowledgeArticle::query()
+            ->with('author:id,name')
+            ->where('status', 'PUBLISHED');
+
+        $articles = $query
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->string('search');
 
@@ -90,6 +136,35 @@ class KnowledgeArticleController extends Controller
                         'helpful' => $userFeedback->helpful,
                     ]
                     : null,
+                'author' => $knowledgeArticle->author
+                    ? [
+                        'id' => $knowledgeArticle->author->id,
+                        'name' => $knowledgeArticle->author->name,
+                    ]
+                    : null,
+                'created_at' => $knowledgeArticle->created_at,
+                'updated_at' => $knowledgeArticle->updated_at,
+            ],
+        ]);
+    }
+
+    public function managementShow(
+        KnowledgeArticle $knowledgeArticle
+    ): JsonResponse {
+        $knowledgeArticle->load('author:id,name');
+
+        return response()->json([
+            'data' => [
+                'id' => $knowledgeArticle->id,
+                'title' => $knowledgeArticle->title,
+                'slug' => $knowledgeArticle->slug,
+                'content' => $knowledgeArticle->content,
+                'category' => $knowledgeArticle->category,
+                'status' => $knowledgeArticle->status,
+                'views' => $knowledgeArticle->views,
+                'helpful_count' => $knowledgeArticle->helpful_count,
+                'not_helpful_count' => $knowledgeArticle->not_helpful_count,
+                'user_feedback' => null,
                 'author' => $knowledgeArticle->author
                     ? [
                         'id' => $knowledgeArticle->author->id,

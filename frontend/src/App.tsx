@@ -11,6 +11,9 @@ import CategoryManagement from "./pages/CategoryManagement";
 import DepartmentManagement from "./pages/DepartmentManagement";
 import KnowledgeBase from "./pages/KnowledgeBase";
 import KnowledgeArticleDetail from "./pages/KnowledgeArticleDetail";
+import KnowledgeBaseManagement from "./pages/admin/KnowledgeBaseManagement";
+import KnowledgeArticleCreate from "./pages/admin/KnowledgeArticleCreate";
+import KnowledgeArticleEdit from "./pages/admin/KnowledgeArticleEdit";
 
 function App() {
   return (
@@ -29,6 +32,9 @@ function App() {
           <Route path="/admin/departments" element={<DepartmentManagement />} />
           <Route path="/knowledge-base" element={<KnowledgeBase />} />
           <Route path="/knowledge-base/:id" element={<KnowledgeArticleDetail />}/>
+          <Route path="/admin/knowledge-base" element={<KnowledgeBaseManagement />}/>
+          <Route path="/admin/knowledge-base/create" element={<KnowledgeArticleCreate />}/>
+          <Route path="/admin/knowledge-base/:id/edit" element={<KnowledgeArticleEdit />}/>
         </Route>
 
         <Route path="*" element={<NotFound />} />
