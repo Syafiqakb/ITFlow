@@ -9,6 +9,8 @@ import TicketDetail from "./pages/TicketDetail";
 import UserManagement from "./pages/UserManagement";
 import CategoryManagement from "./pages/CategoryManagement";
 import DepartmentManagement from "./pages/DepartmentManagement";
+import KnowledgeBase from "./pages/KnowledgeBase";
+import KnowledgeArticleDetail from "./pages/KnowledgeArticleDetail";
 
 function App() {
   return (
@@ -25,6 +27,8 @@ function App() {
           <Route path="/users" element={<UserManagement />} />
           <Route path="/admin/categories" element={<CategoryManagement />} />
           <Route path="/admin/departments" element={<DepartmentManagement />} />
+          <Route path="/knowledge-base" element={<KnowledgeBase />} />
+          <Route path="/knowledge-base/:id" element={<KnowledgeArticleDetail />}/>
         </Route>
 
         <Route path="*" element={<NotFound />} />

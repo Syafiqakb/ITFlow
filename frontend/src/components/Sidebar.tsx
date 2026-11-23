@@ -14,6 +14,10 @@ const menuItems = [
     label: "Create Ticket",
     path: "/tickets/create",
   },
+  {
+    label: "Knowledge Base",
+    path: "/knowledge-base",
+  },
 ];
 
 function Sidebar() {

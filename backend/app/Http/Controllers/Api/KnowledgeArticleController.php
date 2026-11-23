@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\KnowledgeArticle;
+use App\Models\KnowledgeArticleFeedback;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreKnowledgeArticleRequest;
@@ -58,7 +59,7 @@ class KnowledgeArticleController extends Controller
         ]);
     }
 
-    public function show(KnowledgeArticle $knowledgeArticle): JsonResponse
+    public function show(Request $request, KnowledgeArticle $knowledgeArticle): JsonResponse
     {
         abort_unless(
             $knowledgeArticle->status === 'PUBLISHED',
@@ -68,6 +69,10 @@ class KnowledgeArticleController extends Controller
         $knowledgeArticle->increment('views');
 
         $knowledgeArticle->load('author:id,name');
+
+        $userFeedback = KnowledgeArticleFeedback::where('knowledge_article_id', $knowledgeArticle->id)
+            ->where('user_id', $request->user()->id)
+            ->first();
 
         return response()->json([
             'data' => [
@@ -80,6 +85,11 @@ class KnowledgeArticleController extends Controller
                 'views' => $knowledgeArticle->views,
                 'helpful_count' => $knowledgeArticle->helpful_count,
                 'not_helpful_count' => $knowledgeArticle->not_helpful_count,
+                'user_feedback' => $userFeedback
+                    ? [
+                        'helpful' => $userFeedback->helpful,
+                    ]
+                    : null,
                 'author' => $knowledgeArticle->author
                     ? [
                         'id' => $knowledgeArticle->author->id,

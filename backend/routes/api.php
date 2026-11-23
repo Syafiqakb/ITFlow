@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\AdminTicketCategoryController;
 use App\Http\Controllers\Api\TicketCategoryController;
 use App\Http\Controllers\Api\AdminDepartmentController;
 use App\Http\Controllers\Api\KnowledgeArticleController;
+use App\Http\Controllers\Api\KnowledgeArticleFeedbackController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -175,4 +176,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::delete('/knowledge-articles/{knowledgeArticle}', [KnowledgeArticleController::class, 'destroy'])
         ->middleware('role:ADMIN,IT_MANAGER');
+
+    Route::post('/knowledge-articles/{knowledgeArticle}/feedback',[KnowledgeArticleFeedbackController::class, 'store']);
 });

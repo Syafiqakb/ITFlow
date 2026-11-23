@@ -118,4 +118,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(KnowledgeArticle::class, 'author_id');
     }
+
+    public function knowledgeArticleFeedback(): HasMany
+    {
+        return $this->hasMany(
+            KnowledgeArticleFeedback::class,
+            'user_id'
+        );
+    }
 }
