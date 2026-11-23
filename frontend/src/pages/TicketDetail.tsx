@@ -713,19 +713,19 @@ function TicketDetail() {
                   </div>
 
                   {canDeleteAttachment && (
-                  <Button
-                    type="button"
-                    variant="danger"
-                    onClick={() => {
-                      if (window.confirm("Delete this attachment?")) {
-                        deleteAttachmentMutation.mutate(attachment.id);
-                      }
-                    }}
-                    disabled={deleteAttachmentMutation.isPending}
-                    className="ml-4 shrink-0"
-                  >
-                    Delete
-                  </Button>
+                    <Button
+                      type="button"
+                      variant="danger"
+                      onClick={() => {
+                        if (window.confirm("Delete this attachment?")) {
+                          deleteAttachmentMutation.mutate(attachment.id);
+                        }
+                      }}
+                      disabled={deleteAttachmentMutation.isPending}
+                      className="ml-4 shrink-0"
+                    >
+                      Delete
+                    </Button>
                   )}
                 </div>
               ))}
@@ -735,134 +735,163 @@ function TicketDetail() {
       </Card>
       <Card className="mt-6 p-6">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Audit History</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            Ticket Timeline
+          </h2>
 
           <p className="mt-1 text-sm text-gray-500">
-            Record of changes and activities on this ticket.
+            Complete history of changes and activities on this ticket.
           </p>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-8">
           {isAuditLogsLoading ? (
-            <p className="text-sm text-gray-500">Loading audit history...</p>
+            <p className="text-sm text-gray-500">Loading timeline...</p>
           ) : auditLogs.length === 0 ? (
-            <p className="text-sm text-gray-500">No audit history.</p>
+            <p className="text-sm text-gray-500">No timeline activity yet.</p>
           ) : (
-            <div className="space-y-4">
-              {auditLogs.map((log) => (
-                <div
-                  key={log.id}
-                  className="rounded-lg border border-gray-200 p-4"
-                >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`rounded-md px-2 py-1 text-xs font-semibold ${
-                            log.action === "STATUS_CHANGED"
-                              ? "bg-blue-50 text-blue-700"
-                              : log.action === "TICKET_ASSIGNED"
-                                ? "bg-purple-50 text-purple-700"
-                                : log.action === "COMMENT_ADDED"
-                                  ? "bg-green-50 text-green-700"
-                                  : log.action === "ATTACHMENT_UPLOADED"
-                                    ? "bg-indigo-50 text-indigo-700"
-                                    : log.action === "ATTACHMENT_DELETED"
-                                      ? "bg-red-50 text-red-700"
-                                      : log.action === "TICKET_CREATED"
-                                        ? "bg-gray-100 text-gray-700"
-                                        : "bg-yellow-50 text-yellow-700"
-                          }`}
-                        >
-                          {log.action
-                            .replaceAll("_", " ")
-                            .replace("TICKET CREATED", "Ticket Created")
-                            .replace("TICKET UPDATED", "Ticket Updated")
-                            .replace("TICKET ASSIGNED", "Ticket Assigned")
-                            .replace("STATUS CHANGED", "Status Changed")
-                            .replace("COMMENT ADDED", "Comment Added")
-                            .replace(
-                              "ATTACHMENT UPLOADED",
-                              "Attachment Uploaded",
-                            )
-                            .replace(
-                              "ATTACHMENT DELETED",
-                              "Attachment Deleted",
-                            )}
-                        </span>
+            <div className="relative">
+              {/* Timeline vertical line */}
+              <div className="absolute left-3 top-2 bottom-2 w-px bg-gray-200" />
+
+              <div className="space-y-8">
+                {auditLogs.map((log) => {
+                  const actionStyles: Record<
+                    string,
+                    { dot: string; badge: string }
+                  > = {
+                    TICKET_CREATED: {
+                      dot: "bg-gray-500",
+                      badge: "bg-gray-100 text-gray-700",
+                    },
+                    TICKET_UPDATED: {
+                      dot: "bg-yellow-500",
+                      badge: "bg-yellow-50 text-yellow-700",
+                    },
+                    TICKET_ASSIGNED: {
+                      dot: "bg-purple-500",
+                      badge: "bg-purple-50 text-purple-700",
+                    },
+                    STATUS_CHANGED: {
+                      dot: "bg-blue-500",
+                      badge: "bg-blue-50 text-blue-700",
+                    },
+                    COMMENT_ADDED: {
+                      dot: "bg-green-500",
+                      badge: "bg-green-50 text-green-700",
+                    },
+                    ATTACHMENT_UPLOADED: {
+                      dot: "bg-indigo-500",
+                      badge: "bg-indigo-50 text-indigo-700",
+                    },
+                    ATTACHMENT_DELETED: {
+                      dot: "bg-red-500",
+                      badge: "bg-red-50 text-red-700",
+                    },
+                  };
+
+                  const style = actionStyles[log.action] ?? {
+                    dot: "bg-gray-400",
+                    badge: "bg-gray-100 text-gray-700",
+                  };
+
+                  const actionLabel = log.action
+                    .replaceAll("_", " ")
+                    .toLowerCase()
+                    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+
+                  return (
+                    <div key={log.id} className="relative flex gap-4">
+                      {/* Timeline dot */}
+                      <div className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white">
+                        <div className={`h-3 w-3 rounded-full ${style.dot}`} />
                       </div>
 
-                      <p className="mt-2 text-sm font-medium text-gray-900">
-                        {log.description}
-                      </p>
+                      {/* Timeline content */}
+                      <div className="min-w-0 flex-1 pb-2">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <span
+                              className={`inline-flex rounded-md px-2 py-1 text-xs font-semibold ${style.badge}`}
+                            >
+                              {actionLabel}
+                            </span>
 
-                      <p className="mt-1 text-xs text-gray-500">
-                        {log.user?.name ?? "System"}
-                        {" • "}
-                        {new Date(log.created_at).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
+                            <p className="mt-2 text-sm font-medium text-gray-900">
+                              {log.description}
+                            </p>
 
-                  {(log.old_values || log.new_values) && (
-                    <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                      {log.old_values && (
-                        <div className="rounded-lg bg-gray-50 p-3">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                            Previous
-                          </p>
-
-                          <div className="mt-2 space-y-1">
-                            {Object.entries(log.old_values).map(
-                              ([key, value]) => (
-                                <div
-                                  key={key}
-                                  className="flex justify-between gap-4 text-xs"
-                                >
-                                  <span className="text-gray-500">
-                                    {key.replaceAll("_", " ")}
-                                  </span>
-
-                                  <span className="text-right font-medium text-gray-700">
-                                    {String(value ?? "-")}
-                                  </span>
-                                </div>
-                              ),
-                            )}
+                            <p className="mt-1 text-xs text-gray-500">
+                              {log.user?.name ?? "System"}
+                              {" • "}
+                              {new Date(log.created_at).toLocaleString()}
+                            </p>
                           </div>
                         </div>
-                      )}
 
-                      {log.new_values && (
-                        <div className="rounded-lg bg-gray-50 p-3">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                            New
-                          </p>
+                        {/* Previous / New values */}
+                        {(log.old_values || log.new_values) && (
+                          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                            {log.old_values && (
+                              <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                  Previous
+                                </p>
 
-                          <div className="mt-2 space-y-1">
-                            {Object.entries(log.new_values).map(
-                              ([key, value]) => (
-                                <div
-                                  key={key}
-                                  className="flex justify-between gap-4 text-xs"
-                                >
-                                  <span className="text-gray-500">
-                                    {key.replaceAll("_", " ")}
-                                  </span>
+                                <div className="mt-2 space-y-1">
+                                  {Object.entries(log.old_values).map(
+                                    ([key, value]) => (
+                                      <div
+                                        key={key}
+                                        className="flex justify-between gap-4 text-xs"
+                                      >
+                                        <span className="text-gray-500">
+                                          {key.replaceAll("_", " ")}
+                                        </span>
 
-                                  <span className="text-right font-medium text-gray-700">
-                                    {String(value ?? "-")}
-                                  </span>
+                                        <span className="text-right font-medium text-gray-700">
+                                          {String(value ?? "-")}
+                                        </span>
+                                      </div>
+                                    ),
+                                  )}
                                 </div>
-                              ),
+                              </div>
+                            )}
+
+                            {log.new_values && (
+                              <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                  New
+                                </p>
+
+                                <div className="mt-2 space-y-1">
+                                  {Object.entries(log.new_values).map(
+                                    ([key, value]) => (
+                                      <div
+                                        key={key}
+                                        className="flex justify-between gap-4 text-xs"
+                                      >
+                                        <span className="text-gray-500">
+                                          {key.replaceAll("_", " ")}
+                                        </span>
+
+                                        <span className="text-right font-medium text-gray-700">
+                                          {String(value ?? "-")}
+                                        </span>
+                                      </div>
+                                    ),
+                                  )}
+                                </div>
+                              </div>
                             )}
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
-              ))}
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
